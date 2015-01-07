@@ -39,6 +39,7 @@ else
 	gun="(Akşam)"
 fi
 
+
 case "$saat" in
 	01|13)
 		saat="Biri" ;;
