@@ -6,28 +6,37 @@ saat=`echo $tarih | awk -F ":" '{print $1}'`
 dakika=`echo $tarih | awk -F ":" '{print $2}'`
 
 #Saat Denemeleri Yapacağında Aşağıdaki İki Yorum Satırını Kaldır ve Saati gir
-#saat="12"
-#dakika="00"
+saat="06"
+dakika="00"
 
 #Saatin Normal Hali (Sayıyla) Ekrana Yazdırılıyor.
 echo "${saat}:${dakika}"
 
-if [ "${saat:0:1}" = "0" ] && [ "${saat:1:1}" -le "5" ] ; then 
-	gun="(Gece)"
-elif [ "${saat:0:1}" = "0" ] && [ "${saat:1:1}" -gt "5" ] ; then 
-	gun="(Sabah)"
-elif [ "${saat:0:1}" = "2" ] ; then 
+#Öğlen Akşam İkindi Sabah Gece gibi kavramları hesaplayan bölüm
+if [ "${saat:0:1}" = "0" ] ; then
+	case "${saat:1:1}" in
+		0)
+			gun="(Gece yarısı)" ;;
+		1|2|3|4)
+			gun="(Gece)" ;;
+		5|6|7|8|9)
+			gun="(Sabah)" ;;
+	esac
+elif [ "${saat:0:1}" = "1" ] ; then
+	case "${saat:1:1}" in
+		0|1)
+			gun="(Öğleden Önce)"  ;;
+		2|3)
+			gun="(Öğleyin)"  ;;
+		4|5)
+			gun="(İkindi)"  ;;
+		6|7|8)
+			gun="(Akşamüstü)" ;;
+		9)
+			gun="(Akşam)" ;;
+	esac
+else
 	gun="(Akşam)"
-elif [ "${saat:0:1}" = "1" ] && [ "${saat:1:1}" -ge "8" ] ; then
-	gun="(Akşam)" 
-elif [ "${saat:0:1}" = "1" ] && [ "${saat:1:1}" -ge "6" ] ; then
-	gun="(Akşamüstü)"
-elif [ "${saat:0:1}" = "1" ] && [ "${saat:1:1}" -ge "4" ] ; then
-	gun="(İkindi)" 
-elif [ "${saat:0:1}" = "1" ] && [ "${saat:1:1}" -ge "2" ] ; then
-	gun="(Öğleyin)" 
-elif [ "${saat:0:1}" = "1" ] && [ "${saat:1:1}" -ge "0" ] ; then
-	gun="(Öğleden Önce)" 
 fi
 
 case "$saat" in
