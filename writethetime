@@ -6,8 +6,8 @@ saat=`echo $tarih | awk -F ":" '{print $1}'`
 dakika=`echo $tarih | awk -F ":" '{print $2}'`
 
 # Saat Denemeleri Yapacağında Aşağıdaki İki Yorum Satırını Kaldır ve Saati gir
-#saat="06"
-#dakika="00"
+saat="06"
+dakika="05"
 
 # Saatin Normal Hali (Sayıyla) Ekrana Yazdırılıyor.
 echo "${saat}:${dakika}"
@@ -71,6 +71,8 @@ esac
 
 # Dakikanın İlk Hanesini Yazıya Çeviren Kısım
 case "${dakika:0:1}" in
+	0)
+		dakika1="Sıfır" ;;
 	1)
 		dakika1="On" ;;
 	2)
@@ -105,8 +107,6 @@ case "${dakika:1:1}" in
 		dakika2="Sekiz" ;;
 	9)
 		dakika2="Dokuz" ;;
-	0)
-		dakika2="Sıfır" ;;
 	*)
 		dakika2="" ;;
 esac
