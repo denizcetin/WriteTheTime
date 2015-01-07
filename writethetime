@@ -1,10 +1,11 @@
 #!/bin/bash
 
-tarih=`date | awk -F "," '{print $3}'`
-tarih=`echo $tarih | awk '{print $1}'`
-saat=`echo $tarih | awk -F "." '{print $1}'`
-dakika=`echo $tarih | awk -F "." '{print $2}'`
+#Zaman Bilgisini "Saat:Dakika" şeklinde alıp değişkenlere ataması yapılıyor.
+tarih=`date +"%T" | awk -F ":" '{print $1":"$2}'`
+saat=`echo $tarih | awk -F ":" '{print $1}'`
+dakika=`echo $tarih | awk -F ":" '{print $2}'`
 
+#Saatin Normal Hali (Sayıyla) Ekrana Yazdırılıyor.
 echo "${saat}:${dakika}"
 
 if [ "${saat:0:1}" = "0" ] && [ "${saat:1:1}" -le "5" ] ; then 
