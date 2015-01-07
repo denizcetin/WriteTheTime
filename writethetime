@@ -1,18 +1,18 @@
 #!/bin/bash
 
-#Zaman Bilgisini "Saat:Dakika" şeklinde alıp değişkenlere ataması yapılıyor.
+# Zaman Bilgisini "Saat:Dakika" şeklinde alıp değişkenlere ataması yapılıyor.
 tarih=`date +"%T" | awk -F ":" '{print $1":"$2}'`
 saat=`echo $tarih | awk -F ":" '{print $1}'`
 dakika=`echo $tarih | awk -F ":" '{print $2}'`
 
-#Saat Denemeleri Yapacağında Aşağıdaki İki Yorum Satırını Kaldır ve Saati gir
-saat="06"
-dakika="00"
+# Saat Denemeleri Yapacağında Aşağıdaki İki Yorum Satırını Kaldır ve Saati gir
+#saat="06"
+#dakika="00"
 
-#Saatin Normal Hali (Sayıyla) Ekrana Yazdırılıyor.
+# Saatin Normal Hali (Sayıyla) Ekrana Yazdırılıyor.
 echo "${saat}:${dakika}"
 
-#Öğlen Akşam İkindi Sabah Gece gibi kavramları hesaplayan bölüm
+# Öğlen Akşam İkindi Sabah Gece gibi kavramları hesaplayan bölüm
 if [ "${saat:0:1}" = "0" ] ; then
 	case "${saat:1:1}" in
 		0)
@@ -39,7 +39,7 @@ else
 	gun="(Akşam)"
 fi
 
-
+# Saati Yazıya Çeviren Kısım
 case "$saat" in
 	01|13)
 		saat="Biri" ;;
@@ -69,6 +69,7 @@ case "$saat" in
 		echo "Saat Bozuk" ;;
 esac
 
+# Dakikanın İlk Hanesini Yazıya Çeviren Kısım
 case "${dakika:0:1}" in
 	1)
 		dakika1="On" ;;
@@ -84,6 +85,7 @@ case "${dakika:0:1}" in
 		dakika1="" ;;
 esac
 
+# Dakikanın İkinci Hanesini Yazıya Çeviren Kısım
 case "${dakika:1:1}" in
 	1)
 		dakika2="Bir" ;;
