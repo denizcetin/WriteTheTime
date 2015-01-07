@@ -1,0 +1,99 @@
+#!/bin/bash
+
+tarih=`date | awk -F "," '{print $3}'`
+tarih=`echo $tarih | awk '{print $1}'`
+saat=`echo $tarih | awk -F "." '{print $1}'`
+dakika=`echo $tarih | awk -F "." '{print $2}'`
+
+echo "${saat}:${dakika}"
+
+if [ "${saat:0:1}" = "0" ] && [ "${saat:1:1}" -le "5" ] ; then 
+	gun="(Gece)"
+elif [ "${saat:0:1}" = "0" ] && [ "${saat:1:1}" -gt "5" ] ; then 
+	gun="(Sabah)"
+elif [ "${saat:0:1}" = "2" ] ; then 
+	gun="(Akşam)"
+elif [ "${saat:0:1}" = "1" ] && [ "${saat:1:1}" -ge "8" ] ; then
+	gun="(Akşam)" 
+elif [ "${saat:0:1}" = "1" ] && [ "${saat:1:1}" -ge "6" ] ; then
+	gun="(Akşamüstü)"
+elif [ "${saat:0:1}" = "1" ] && [ "${saat:1:1}" -ge "4" ] ; then
+	gun="(İkindi)" 
+elif [ "${saat:0:1}" = "1" ] && [ "${saat:1:1}" -ge "2" ] ; then
+	gun="(Öğleyin)" 
+elif [ "${saat:0:1}" = "1" ] && [ "${saat:1:1}" -ge "0" ] ; then
+	gun="(Öğleden Önce)" 
+fi
+
+case "$saat" in
+	01|13)
+		saat="Biri" ;;
+	02|14)
+		saat="İkiyi" ;;
+	03|15)
+		saat="Üçü" ;;
+	04|16)
+		saat="Dördü" ;;
+	05|17)
+		saat="Beşi" ;;
+	06|18)
+		saat="Altıyı" ;;
+	07|19)
+		saat="Yediyi" ;;
+	08|20)
+		saat="Sekizi" ;;
+	09|21)
+		saat="Dokuzu" ;;
+	10|22)
+		saat="Onu" ;;
+	11|23)
+		saat="On Biri" ;;
+	12|00)
+		saat="On İkiyi" ;;
+	*)
+		echo "Saat Bozuk" ;;
+esac
+
+case "${dakika:0:1}" in
+	1)
+		dakika1="On" ;;
+	2)
+		dakika1="Yirmi" ;;
+	3)
+		dakika1="Otuz" ;;
+	4)
+		dakika1="Kırk" ;;
+	5)
+		dakika1="Elli" ;;
+	0)
+		dakika1="Sıfır" ;;
+	*)
+		dakika1="" ;;
+esac
+
+case "${dakika:1:1}" in
+	1)
+		dakika2="Bir" ;;
+	2)
+		dakika2="İki" ;;
+	3)
+		dakika2="Üç" ;;
+	4)
+		dakika2="Dört" ;;
+	5)
+		dakika2="Beş" ;;
+	6)
+		dakika2="Altı" ;;
+	7)
+		dakika2="Yedi" ;;
+	8)
+		dakika2="Sekiz" ;;
+	9)
+		dakika2="Dokuz" ;;
+	*)
+		dakika2="" ;;
+esac
+
+saat="$gun Saat ${saat} ${dakika1} ${dakika2} geçiyor."
+
+echo "$saat"
