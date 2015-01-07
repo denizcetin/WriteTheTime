@@ -5,6 +5,10 @@ tarih=`date +"%T" | awk -F ":" '{print $1":"$2}'`
 saat=`echo $tarih | awk -F ":" '{print $1}'`
 dakika=`echo $tarih | awk -F ":" '{print $2}'`
 
+#Saat Denemeleri Yapacağında Aşağıdaki İki Yorum Satırını Kaldır ve Saati gir
+#saat="09"
+#dakika="01"
+
 #Saatin Normal Hali (Sayıyla) Ekrana Yazdırılıyor.
 echo "${saat}:${dakika}"
 
