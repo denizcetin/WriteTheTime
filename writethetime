@@ -12,6 +12,27 @@ dakika=`echo $tarih | awk -F ":" '{print $2}'`
 # Saatin Normal Hali (Sayıyla) Ekrana Yazdırılıyor.
 echo "${saat}:${dakika}"
 
+
+
+# -y parametresi eklenirse saati yaklaşık olarak verir.
+case "$#" in
+	1)
+		if [ "$1" = "-y" ]
+			then
+				echo "Yaklaşık Saat"
+		else
+			echo "Hatalı Parametre"
+			exit
+		fi
+		;;
+	0)
+		echo "Normal Saat"
+		;;
+	*)
+		echo "Fazla Parametre Girdiniz"
+		;;
+esac
+
 # Öğlen Akşam İkindi Sabah Gece gibi kavramları hesaplayan bölüm
 if [ "${saat:0:1}" = "0" ] ; then
 	case "${saat:1:1}" in
