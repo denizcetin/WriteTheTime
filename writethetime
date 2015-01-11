@@ -12,7 +12,46 @@ dakika=`echo $tarih | awk -F ":" '{print $2}'`
 # Sistem Saati (Sayıyla) Ekrana Yazdırılıyor.
 echo "Sistem Saati : ${saat}:${dakika}"
 
-
+# Saati Yaklaşık Olarak Hesaplayan Fonksiyon
+# Parametreler sırasıyla dakika ve saat
+function yaklasikSaat {
+	
+	if [[ "$1" -ge 00 && "$1" -le 03 ]] ; then
+		echo "Saat $2"
+	elif [[ "$1" -ge 04 && "$1" -le 07 ]] ; then
+		echo "Beş Geçiyor"
+	elif [[ "$1" -ge 8 && "$1" -le 12 ]] ; then
+		echo "On Geçiyor"
+	elif [[ "$1" -ge 13 && "$1" -le 17 ]] ; then
+		echo "Çeyrek Geçiyor"
+	elif [[ "$1" -ge 18 && "$1" -le 22 ]] ; then
+		echo "Yirmi Geçiyor"
+	elif [[ "$1" -ge 23 && "$1" -le 27 ]] ; then
+		echo "Yirmi Beş Geçiyor"
+	elif [[ "$1" -ge 28 && "$1" -le 33 ]] ; then
+		echo "Buçuk"
+	elif [[ "$1" -ge 34 && "$1" -le 37 ]] ; then
+		echo "Yirmi Beş Var"
+		yaksaat=$[$2 + 1]
+	elif [[ "$1" -ge 38 && "$1" -le 42 ]] ; then
+		echo "Yirmi Var"
+		yaksaat=$[$2 + 1]
+	elif [[ "$1" -ge 43 && "$1" -le 47 ]] ; then
+		echo "Çeyrek Var"
+		yaksaat=$[$2 + 1]
+	elif [[ "$1" -ge 48 && "$1" -le 52 ]] ; then
+		echo "On Var"
+		yaksaat=$[$2 + 1]
+	elif [[ "$1" -ge 53 && "$1" -le 56 ]] ; then
+		echo "Beş Var"
+		yaksaat=$[$2 + 1]
+	elif [[ "$1" -ge 57 && "$1" -le 59 ]] ; then
+		echo "Saat Tam"
+		yaksaat=$[$2 + 1]
+	fi
+	
+	echo "deneme $yaksaat"
+}
 
 # -y parametresi eklenirse saati yaklaşık olarak verir. 
 # Bu case programa verilen parametre sayısı üzerinden işlem yapar.
@@ -22,6 +61,8 @@ case "$#" in
 			then
 				# parametre "-y" ise
 				echo "Yaklaşık Saat"
+				yaklasikSaat $dakika $saat
+				echo "$saat"
 		else
 			# parametre "-y" değilse
 			echo "Hatalı Parametre"
@@ -36,6 +77,8 @@ case "$#" in
 		exit
 		;;
 esac
+
+
 
 # Öğlen Akşam İkindi Sabah Gece gibi kavramları hesaplayan bölüm
 if [ "${saat:0:1}" = "0" ] ; then
