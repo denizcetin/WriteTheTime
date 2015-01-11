@@ -9,27 +9,31 @@ dakika=`echo $tarih | awk -F ":" '{print $2}'`
 #saat="06"
 #dakika="05"
 
-# Saatin Normal Hali (Sayıyla) Ekrana Yazdırılıyor.
-echo "${saat}:${dakika}"
+# Sistem Saati (Sayıyla) Ekrana Yazdırılıyor.
+echo "Sistem Saati : ${saat}:${dakika}"
 
 
 
-# -y parametresi eklenirse saati yaklaşık olarak verir.
+# -y parametresi eklenirse saati yaklaşık olarak verir. 
+# Bu case programa verilen parametre sayısı üzerinden işlem yapar.
 case "$#" in
-	1)
+	1) # Parametre sayısı 1 "bir" ise
 		if [ "$1" = "-y" ]
 			then
+				# parametre "-y" ise
 				echo "Yaklaşık Saat"
 		else
+			# parametre "-y" değilse
 			echo "Hatalı Parametre"
 			exit
 		fi
 		;;
-	0)
+	0)	# Parametre sayısı 0 "sıfır" ise (Parametre Yoksa)
 		echo "Normal Saat"
 		;;
 	*)
 		echo "Fazla Parametre Girdiniz"
+		exit
 		;;
 esac
 
