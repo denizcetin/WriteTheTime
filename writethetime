@@ -16,20 +16,40 @@ echo "Sistem Saati : ${saat}:${dakika}"
 # Parametreler sırasıyla dakika ve saat
 function yaklasikSaat {
 	
+	case $2 in
+		01|05|08|11|13|17|20|23)
+			geceEki="i" ;;
+		02|07|12|14|19|00)
+			geceEki="'yi" ;;
+		06|18)
+			geceEki="yı" ;;
+		03|04|15|16)
+			geceEki="ü" ;;
+		09|10|21|22)
+			geceEki="u" ;;
+	esac
+	
+	yakSaat="$2"
+	
+	case $2 in
+		02|14)
+			yakSaat="İki" ;;
+	esac
+	
 	if [[ "$1" -ge 00 && "$1" -le 03 ]] ; then
 		echo "Saat $2"
 	elif [[ "$1" -ge 04 && "$1" -le 07 ]] ; then
-		echo "Beş Geçiyor"
+		echo "$2$geceEki Beş Geçiyor"
 	elif [[ "$1" -ge 8 && "$1" -le 12 ]] ; then
-		echo "On Geçiyor"
+		echo "$yakSaat$geceEki On Geçiyor"
 	elif [[ "$1" -ge 13 && "$1" -le 17 ]] ; then
-		echo "Çeyrek Geçiyor"
+		yazdir="$2$geceEki Çeyrek Geçiyor"
 	elif [[ "$1" -ge 18 && "$1" -le 22 ]] ; then
-		echo "Yirmi Geçiyor"
+		yazdir="$yakSaat$geceEki Yirmi Geçiyor"
 	elif [[ "$1" -ge 23 && "$1" -le 27 ]] ; then
-		echo "Yirmi Beş Geçiyor"
+		yazdir="${yakSaat}${geceEki} Yirmi Beş Geçiyor"
 	elif [[ "$1" -ge 28 && "$1" -le 33 ]] ; then
-		echo "Buçuk"
+		yazdir="${yakSaat} Buçuk"
 	elif [[ "$1" -ge 34 && "$1" -le 37 ]] ; then
 		echo "Yirmi Beş Var"
 		yaksaat=$[$2 + 1]
@@ -50,7 +70,9 @@ function yaklasikSaat {
 		yaksaat=$[$2 + 1]
 	fi
 	
-	echo "deneme $yaksaat"
+	
+	
+	echo "$yazdir"
 }
 
 # -y parametresi eklenirse saati yaklaşık olarak verir. 
