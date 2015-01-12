@@ -14,7 +14,6 @@ echo "Sistem Saati => ${saat}:${dakika}"
 
 # Öğlen Akşam İkindi Sabah Gece gibi kavramları hesaplayan fonksiyon
 function gunHesapla {
-	
 	if [ "${saat:0:1}" = "0" ] ; then
 		case "${saat:1:1}" in
 			0)
@@ -40,12 +39,12 @@ function gunHesapla {
 	else
 		gun="(Akşam)"
 	fi
-	
 	echo "$gun"
 }
 
 # Saat bişey'i bişey geçiyor larda ki sayılara gelecek ekleri hesaplayan fonksiyon
-function geceEkiniHesapla (){
+# Parametre olarak saat alır.
+function geceEkiniHesapla {
 	case "$1" in
 		01|05|08|11|13|17|20|23)
 			geceEki="'i" ;;
@@ -62,7 +61,7 @@ function geceEkiniHesapla (){
 }
 
 # Saat bişey'e bişey var larda ki sayılara gelecek ekleri hesaplayan fonksiyon
-# Parametre olarak saat alır çünkü kala' larda saat bir artar
+# Parametre olarak saat alır.
 function kalaEkiniHesapla {
 	case "$1" in
 		01|03|04|05|08|11|13|15|16|17|20|23)
@@ -75,6 +74,41 @@ function kalaEkiniHesapla {
 			kalaEki="'a" ;;
 	esac
 	echo "$kalaEki"
+}
+
+# Saati yazıya çeviren fonksiyon
+# Parametre olarak saat alır.
+function saatiYaziyaCevir {
+	case "$1" in
+		01|13)
+			saatyazi="Bir" ;;
+		02|14)
+			saatyazi="İki" ;;
+		03|15)
+			saatyazi="Üç" ;;
+		04|16)
+			saatyazi="Dört" ;;
+		05|17)
+			saatyazi="Beş" ;;
+		06|18)
+			saatyazi="Altı" ;;
+		07|19)
+			saatyazi="Yedi" ;;
+		08|20)
+			saatyazi="Sekiz" ;;
+		09|21)
+			saatyazi="Dokuz" ;;
+		10|22)
+			saatyazi="On" ;;
+		11|23)
+			saatyazi="On Bir" ;;
+		12|00)
+			saatyazi="On İki" ;;
+		*)
+			echo "Saat Bozuk"
+			exit ;;
+	esac
+	echo "$saatyazi"
 }
 
 # Saati Yaklaşık Olarak Hesaplayan Fonksiyon
@@ -97,47 +131,12 @@ function yaklasikSaat {
 		esac
 		ek="$(kalaEkiniHesapla $saaty)"
 	fi
-	
-	case "$saaty" in
-		01|13)
-			saaty="Bir" ;;
-		02|14)
-			saaty="İki" ;;
-		03|15)
-			saaty="Üç" ;;
-		04|16)
-			saaty="Dört" ;;
-		05|17)
-			saaty="Beş" ;;
-		06|18)
-			saaty="Altı" ;;
-		07|19)
-			saaty="Yedi" ;;
-		08|20)
-			saaty="Sekiz" ;;
-		09|21)
-			saaty="Dokuz" ;;
-		10|22)
-			saaty="On" ;;
-		11|23)
-			saaty="On Bir" ;;
-		12|00)
-			saaty="On İki" ;;
-		*)
-			echo "Saat Bozuk" ;;
-esac
-
-
-	
-	
-	echo "$(gunHesapla) ${onek} ${saaty}${ek}"
+	echo "$(gunHesapla) ${onek} $(saatiYaziyaCevir $saaty)${ek}"
 }
 
-function normalSaat {
-	
+function normalSaat {	
 	#gunHesapla fonksiyonunu çağır
 	gunHesapla
-	
 	# Saati Yazıya Çeviren Kısım
 	case "$saat" in
 		01|13)
