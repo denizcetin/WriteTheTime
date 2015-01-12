@@ -7,72 +7,218 @@ dakika=`echo $tarih | awk -F ":" '{print $2}'`
 
 # Saat Denemeleri Yapacağında Aşağıdaki İki Yorum Satırını Kaldır ve Saati gir
 #saat="06"
-#dakika="05"
+#dakika="10"
 
 # Sistem Saati (Sayıyla) Ekrana Yazdırılıyor.
-echo "Sistem Saati : ${saat}:${dakika}"
+echo "Sistem Saati => ${saat}:${dakika}"
 
 # Saati Yaklaşık Olarak Hesaplayan Fonksiyon
 # Parametreler sırasıyla dakika ve saat
 function yaklasikSaat {
 	
-	case $2 in
+	yakSaat="$2"
+	
+	case "$2" in
 		01|05|08|11|13|17|20|23)
-			geceEki="i" ;;
+			geceEki="'i" ;;
 		02|07|12|14|19|00)
 			geceEki="'yi" ;;
 		06|18)
-			geceEki="yı" ;;
+			geceEki="'yı" ;;
 		03|04|15|16)
-			geceEki="ü" ;;
+			geceEki="'ü" ;;
 		09|10|21|22)
-			geceEki="u" ;;
+			geceEki="'u" ;;
 	esac
 	
-	yakSaat="$2"
+	case "$2" in
+		01|03|04|05|08|11|13|15|16|17|20|23)
+			kalaEki="'e" ;;
+		02|07|12|14|19|00)
+			kalaEki="'ye" ;;
+		06|18)
+			kalaEki="'ya" ;;
+		09|10|21|22)
+			kalaEki="'a" ;;
+	esac
 	
 	case $2 in
 		02|14)
 			yakSaat="İki" ;;
 	esac
 	
+	case "$2" in
+		01|13)
+			saat="Bir" ;;
+		02|14)
+			saat="İki" ;;
+		03|15)
+			saat="Üç" ;;
+		04|16)
+			saat="Dört" ;;
+		05|17)
+			saat="Beş" ;;
+		06|18)
+			saat="Altı" ;;
+		07|19)
+			saat="Yedi" ;;
+		08|20)
+			saat="Sekiz" ;;
+		09|21)
+			saat="Dokuz" ;;
+		10|22)
+			saat="On" ;;
+		11|23)
+			saat="On Bir" ;;
+		12|00)
+			saat="On İki" ;;
+		*)
+			echo "Saat Bozuk" ;;
+esac
+	dakikak=$1
+	
 	if [[ "$1" -ge 00 && "$1" -le 03 ]] ; then
-		echo "Saat $2"
+		durum=""
 	elif [[ "$1" -ge 04 && "$1" -le 07 ]] ; then
-		echo "$2$geceEki Beş Geçiyor"
-	elif [[ "$1" -ge 8 && "$1" -le 12 ]] ; then
-		echo "$yakSaat$geceEki On Geçiyor"
+		durum="Beş Geçiyor"
+	elif [[ "${dakikak:1:1}" -ge 08 && "$1" -le 12 ]] ; then
+		durum="On Geçiyor"
 	elif [[ "$1" -ge 13 && "$1" -le 17 ]] ; then
-		yazdir="$2$geceEki Çeyrek Geçiyor"
+		durum="Çeyrek Geçiyor"
 	elif [[ "$1" -ge 18 && "$1" -le 22 ]] ; then
-		yazdir="$yakSaat$geceEki Yirmi Geçiyor"
+		durum="Yirmi Geçiyor"
 	elif [[ "$1" -ge 23 && "$1" -le 27 ]] ; then
-		yazdir="${yakSaat}${geceEki} Yirmi Beş Geçiyor"
+		durum="Yirmi Beş Geçiyor"
 	elif [[ "$1" -ge 28 && "$1" -le 33 ]] ; then
-		yazdir="${yakSaat} Buçuk"
+		durum="Buçuk"
 	elif [[ "$1" -ge 34 && "$1" -le 37 ]] ; then
-		echo "Yirmi Beş Var"
-		yaksaat=$[$2 + 1]
+		durum="Yirmi Beş Var"
 	elif [[ "$1" -ge 38 && "$1" -le 42 ]] ; then
 		echo "Yirmi Var"
-		yaksaat=$[$2 + 1]
 	elif [[ "$1" -ge 43 && "$1" -le 47 ]] ; then
 		echo "Çeyrek Var"
-		yaksaat=$[$2 + 1]
 	elif [[ "$1" -ge 48 && "$1" -le 52 ]] ; then
 		echo "On Var"
-		yaksaat=$[$2 + 1]
 	elif [[ "$1" -ge 53 && "$1" -le 56 ]] ; then
 		echo "Beş Var"
-		yaksaat=$[$2 + 1]
 	elif [[ "$1" -ge 57 && "$1" -le 59 ]] ; then
-		echo "Saat Tam"
-		yaksaat=$[$2 + 1]
+		echo ""
 	fi
 	
 	
+	if [[ "$1" -ge 04 && "$1" -le 27 ]] ; then
+		ek="$geceEki"
+	elif [[ "$1" -ge 34 && "$1" -le 56 ]] ; then
+		ek="$kalaEki"
+	fi
 	
-	echo "$yazdir"
+	
+	echo "${saat}${ek} $durum"
+}
+
+function normalSaat {
+	# Öğlen Akşam İkindi Sabah Gece gibi kavramları hesaplayan bölüm
+	if [ "${saat:0:1}" = "0" ] ; then
+		case "${saat:1:1}" in
+			0)
+				gun="(Gece yarısı)" ;;
+			1|2|3|4)
+				gun="(Gece)" ;;
+			5|6|7|8|9)
+				gun="(Sabah)" ;;
+		esac
+	elif [ "${saat:0:1}" = "1" ] ; then
+		case "${saat:1:1}" in
+			0|1)
+				gun="(Öğleden Önce)"  ;;
+			2|3)
+				gun="(Öğleyin)"  ;;
+			4|5)
+				gun="(İkindi)"  ;;
+			6|7|8)
+				gun="(Akşamüstü)" ;;
+			9)
+				gun="(Akşam)" ;;
+		esac
+	else
+		gun="(Akşam)"
+	fi
+
+	# Saati Yazıya Çeviren Kısım
+	case "$saat" in
+		01|13)
+			saat="Biri" ;;
+		02|14)
+			saat="İkiyi" ;;
+		03|15)
+			saat="Üçü" ;;
+		04|16)
+			saat="Dördü" ;;
+		05|17)
+			saat="Beşi" ;;
+		06|18)
+			saat="Altıyı" ;;
+		07|19)
+			saat="Yediyi" ;;
+		08|20)
+			saat="Sekizi" ;;
+		09|21)
+			saat="Dokuzu" ;;
+		10|22)
+			saat="Onu" ;;
+		11|23)
+			saat="On Biri" ;;
+		12|00)
+			saat="On İkiyi" ;;
+		*)
+			echo "Saat Bozuk" ;;
+	esac
+
+	# Dakikanın İlk Hanesini Yazıya Çeviren Kısım
+	case "${dakika:0:1}" in
+		0)
+			dakika1="Sıfır" ;;
+		1)
+			dakika1="On" ;;
+		2)
+			dakika1="Yirmi" ;;
+		3)
+			dakika1="Otuz" ;;
+		4)
+			dakika1="Kırk" ;;
+		5)
+			dakika1="Elli" ;;
+		*)
+			dakika1="" ;;
+	esac
+
+	# Dakikanın İkinci Hanesini Yazıya Çeviren Kısım
+	case "${dakika:1:1}" in
+		1)
+			dakika2="Bir" ;;
+		2)
+			dakika2="İki" ;;
+		3)
+			dakika2="Üç" ;;
+		4)
+			dakika2="Dört" ;;
+		5)
+			dakika2="Beş" ;;
+		6)
+			dakika2="Altı" ;;
+		7)
+			dakika2="Yedi" ;;
+		8)
+			dakika2="Sekiz" ;;
+		9)
+			dakika2="Dokuz" ;;
+		*)
+			dakika2="" ;;
+	esac
+
+	saat="$gun Saat ${saat} ${dakika1} ${dakika2} geçiyor."
+
+	echo "$saat"
 }
 
 # -y parametresi eklenirse saati yaklaşık olarak verir. 
@@ -93,114 +239,10 @@ case "$#" in
 		;;
 	0)	# Parametre sayısı 0 "sıfır" ise (Parametre Yoksa)
 		echo "Normal Saat"
+			normalSaat
 		;;
 	*)
 		echo "Fazla Parametre Girdiniz"
 		exit
 		;;
 esac
-
-
-
-# Öğlen Akşam İkindi Sabah Gece gibi kavramları hesaplayan bölüm
-if [ "${saat:0:1}" = "0" ] ; then
-	case "${saat:1:1}" in
-		0)
-			gun="(Gece yarısı)" ;;
-		1|2|3|4)
-			gun="(Gece)" ;;
-		5|6|7|8|9)
-			gun="(Sabah)" ;;
-	esac
-elif [ "${saat:0:1}" = "1" ] ; then
-	case "${saat:1:1}" in
-		0|1)
-			gun="(Öğleden Önce)"  ;;
-		2|3)
-			gun="(Öğleyin)"  ;;
-		4|5)
-			gun="(İkindi)"  ;;
-		6|7|8)
-			gun="(Akşamüstü)" ;;
-		9)
-			gun="(Akşam)" ;;
-	esac
-else
-	gun="(Akşam)"
-fi
-
-# Saati Yazıya Çeviren Kısım
-case "$saat" in
-	01|13)
-		saat="Biri" ;;
-	02|14)
-		saat="İkiyi" ;;
-	03|15)
-		saat="Üçü" ;;
-	04|16)
-		saat="Dördü" ;;
-	05|17)
-		saat="Beşi" ;;
-	06|18)
-		saat="Altıyı" ;;
-	07|19)
-		saat="Yediyi" ;;
-	08|20)
-		saat="Sekizi" ;;
-	09|21)
-		saat="Dokuzu" ;;
-	10|22)
-		saat="Onu" ;;
-	11|23)
-		saat="On Biri" ;;
-	12|00)
-		saat="On İkiyi" ;;
-	*)
-		echo "Saat Bozuk" ;;
-esac
-
-# Dakikanın İlk Hanesini Yazıya Çeviren Kısım
-case "${dakika:0:1}" in
-	0)
-		dakika1="Sıfır" ;;
-	1)
-		dakika1="On" ;;
-	2)
-		dakika1="Yirmi" ;;
-	3)
-		dakika1="Otuz" ;;
-	4)
-		dakika1="Kırk" ;;
-	5)
-		dakika1="Elli" ;;
-	*)
-		dakika1="" ;;
-esac
-
-# Dakikanın İkinci Hanesini Yazıya Çeviren Kısım
-case "${dakika:1:1}" in
-	1)
-		dakika2="Bir" ;;
-	2)
-		dakika2="İki" ;;
-	3)
-		dakika2="Üç" ;;
-	4)
-		dakika2="Dört" ;;
-	5)
-		dakika2="Beş" ;;
-	6)
-		dakika2="Altı" ;;
-	7)
-		dakika2="Yedi" ;;
-	8)
-		dakika2="Sekiz" ;;
-	9)
-		dakika2="Dokuz" ;;
-	*)
-		dakika2="" ;;
-esac
-
-saat="$gun Saat ${saat} ${dakika1} ${dakika2} geçiyor."
-
-echo "$saat"
