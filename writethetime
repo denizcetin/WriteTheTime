@@ -6,8 +6,8 @@ saat=`echo $tarih | awk -F ":" '{print $1}'`
 dakika=`echo $tarih | awk -F ":" '{print $2}'`
 
 # Saat Denemeleri Yapacağında Aşağıdaki İki Yorum Satırını Kaldır ve Saati gir
-saat=00
-dakika=30
+#saat=00
+#dakika=30
 
 # Sistem Saati (Sayıyla) Ekrana Yazdırılıyor.
 echo "Sistem Saati => ${saat}:${dakika}"
@@ -80,7 +80,9 @@ function kalaEkiniHesapla {
 # Saati Yaklaşık Olarak Hesaplayan Fonksiyon
 function yaklasikSaat {
 	saaty=$saat
-	if [[ "$1" -ge 04 && "$1" -le 26 ]] ; then
+	if [[ "$dakika" -ge 00 && "$dakika" -le 03 ]] ; then
+		onek="Tam"
+	elif [[ "$dakika" -ge 04 && "$dakika" -le 26 ]] ; then
 		ek=$(geceEkiniHesapla $saaty)
 	elif [[ "$dakika" -ge 27 && "$dakika" -le 33 ]] ; then
 		ek=" Buçuk"
@@ -128,7 +130,7 @@ esac
 
 	
 	
-	echo "$(gunHesapla) ${saaty}${ek}"
+	echo "$(gunHesapla) ${onek} ${saaty}${ek}"
 }
 
 function normalSaat {
