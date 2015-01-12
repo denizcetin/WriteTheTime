@@ -12,13 +12,44 @@ dakika=`echo $tarih | awk -F ":" '{print $2}'`
 # Sistem Saati (Sayıyla) Ekrana Yazdırılıyor.
 echo "Sistem Saati => ${saat}:${dakika}"
 
+# Öğlen Akşam İkindi Sabah Gece gibi kavramları hesaplayan fonksiyon
+function gunHesapla {
+	
+	if [ "${saat:0:1}" = "0" ] ; then
+		case "${saat:1:1}" in
+			0)
+				gun="(Gece yarısı)" ;;
+			1|2|3|4)
+				gun="(Gece)" ;;
+			5|6|7|8|9)
+				gun="(Sabah)" ;;
+		esac
+	elif [ "${saat:0:1}" = "1" ] ; then
+		case "${saat:1:1}" in
+			0|1)
+				gun="(Öğleden Önce)"  ;;
+			2|3)
+				gun="(Öğleyin)"  ;;
+			4|5)
+				gun="(İkindi)"  ;;
+			6|7|8)
+				gun="(Akşamüstü)" ;;
+			9)
+				gun="(Akşam)" ;;
+		esac
+	else
+		gun="(Akşam)"
+	fi
+	
+}
+
 # Saati Yaklaşık Olarak Hesaplayan Fonksiyon
-# Parametreler sırasıyla dakika ve saat
 function yaklasikSaat {
 	
-	yakSaat="$2"
+	#gunHesapla fonksiyonunu çağır
+	gunHesapla
 	
-	case "$2" in
+	case "$saat" in
 		01|05|08|11|13|17|20|23)
 			geceEki="'i" ;;
 		02|07|12|14|19|00)
@@ -31,7 +62,7 @@ function yaklasikSaat {
 			geceEki="'u" ;;
 	esac
 	
-	case "$2" in
+	case "$saat" in
 		01|03|04|05|08|11|13|15|16|17|20|23)
 			kalaEki="'e" ;;
 		02|07|12|14|19|00)
@@ -40,11 +71,6 @@ function yaklasikSaat {
 			kalaEki="'ya" ;;
 		09|10|21|22)
 			kalaEki="'a" ;;
-	esac
-	
-	case $2 in
-		02|14)
-			yakSaat="İki" ;;
 	esac
 	
 	case "$2" in
@@ -75,37 +101,7 @@ function yaklasikSaat {
 		*)
 			echo "Saat Bozuk" ;;
 esac
-	dakikak=$1
-	
-	if [[ "$1" -ge 00 && "$1" -le 03 ]] ; then
-		durum=""
-	elif [[ "$1" -ge 04 && "$1" -le 07 ]] ; then
-		durum="Beş Geçiyor"
-	elif [[ "${dakikak:1:1}" -ge 08 && "$1" -le 12 ]] ; then
-		durum="On Geçiyor"
-	elif [[ "$1" -ge 13 && "$1" -le 17 ]] ; then
-		durum="Çeyrek Geçiyor"
-	elif [[ "$1" -ge 18 && "$1" -le 22 ]] ; then
-		durum="Yirmi Geçiyor"
-	elif [[ "$1" -ge 23 && "$1" -le 27 ]] ; then
-		durum="Yirmi Beş Geçiyor"
-	elif [[ "$1" -ge 28 && "$1" -le 33 ]] ; then
-		durum="Buçuk"
-	elif [[ "$1" -ge 34 && "$1" -le 37 ]] ; then
-		durum="Yirmi Beş Var"
-	elif [[ "$1" -ge 38 && "$1" -le 42 ]] ; then
-		echo "Yirmi Var"
-	elif [[ "$1" -ge 43 && "$1" -le 47 ]] ; then
-		echo "Çeyrek Var"
-	elif [[ "$1" -ge 48 && "$1" -le 52 ]] ; then
-		echo "On Var"
-	elif [[ "$1" -ge 53 && "$1" -le 56 ]] ; then
-		echo "Beş Var"
-	elif [[ "$1" -ge 57 && "$1" -le 59 ]] ; then
-		echo ""
-	fi
-	
-	
+
 	if [[ "$1" -ge 04 && "$1" -le 27 ]] ; then
 		ek="$geceEki"
 	elif [[ "$1" -ge 34 && "$1" -le 56 ]] ; then
@@ -113,37 +109,14 @@ esac
 	fi
 	
 	
-	echo "${saat}${ek} $durum"
+	echo "${gun} ${saat}${ek}"
 }
 
 function normalSaat {
-	# Öğlen Akşam İkindi Sabah Gece gibi kavramları hesaplayan bölüm
-	if [ "${saat:0:1}" = "0" ] ; then
-		case "${saat:1:1}" in
-			0)
-				gun="(Gece yarısı)" ;;
-			1|2|3|4)
-				gun="(Gece)" ;;
-			5|6|7|8|9)
-				gun="(Sabah)" ;;
-		esac
-	elif [ "${saat:0:1}" = "1" ] ; then
-		case "${saat:1:1}" in
-			0|1)
-				gun="(Öğleden Önce)"  ;;
-			2|3)
-				gun="(Öğleyin)"  ;;
-			4|5)
-				gun="(İkindi)"  ;;
-			6|7|8)
-				gun="(Akşamüstü)" ;;
-			9)
-				gun="(Akşam)" ;;
-		esac
-	else
-		gun="(Akşam)"
-	fi
-
+	
+	#gunHesapla fonksiyonunu çağır
+	gunHesapla
+	
 	# Saati Yazıya Çeviren Kısım
 	case "$saat" in
 		01|13)
@@ -216,7 +189,7 @@ function normalSaat {
 			dakika2="" ;;
 	esac
 
-	saat="$gun Saat ${saat} ${dakika1} ${dakika2} geçiyor."
+	saat="$gun ${saat} ${dakika1} ${dakika2} geçiyor."
 
 	echo "$saat"
 }
@@ -230,7 +203,6 @@ case "$#" in
 				# parametre "-y" ise
 				echo "Yaklaşık Saat"
 				yaklasikSaat $dakika $saat
-				echo "$saat"
 		else
 			# parametre "-y" değilse
 			echo "Hatalı Parametre"
@@ -246,3 +218,4 @@ case "$#" in
 		exit
 		;;
 esac
+
