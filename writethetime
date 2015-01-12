@@ -12,6 +12,20 @@ dakika=45
 # Sistem Saati (Sayıyla) Ekrana Yazdırılıyor.
 echo "Sistem Saati => ${saat}:${dakika}"
 
+# Sayı mı değil mi test eden fonksiyon
+# Parametre olarak saat alır.
+# Gelen parametre sayi ise bir "1" sayı değilse "0" döndürür
+function sayiMi {
+	yournumber="$1"
+	# sayı için doku
+	re='^[0-9]+$'
+	if ! [[ $yournumber =~ $re ]] ; then
+		return 0
+	else
+		return 1
+	fi
+}
+
 # Öğlen Akşam İkindi Sabah Gece gibi kavramları hesaplayan fonksiyon
 function gunHesapla {
 	if [ "${saat:0:1}" = "0" ] ; then
@@ -76,9 +90,9 @@ function kalaEkiniHesapla {
 	echo "$kalaEki"
 }
 
-# Saatin Sıfırlarını atan fonksiyon
-# Parametre olarak saat alır.
-function saatinSifiriniAt {
+# Sıfırlarını atan fonksiyon
+# Parametre olarak saat veya dakika alır.
+function sifiriniAt {
 	echo "$((10#$1))"
 }
 
@@ -121,7 +135,7 @@ function saatiYaziyaCevir {
 function yaklasikSaat {
 	# Saati sıfırlardan arındır ve saaty değişkenine ata
 	# Önemli Not ! $saat değişkenin orjinali bozulmuyor
-	saaty=$(saatinSifiriniAt $saat)
+	saaty=$(sifiriniAt $saat)
 	if [[ "$dakika" -ge 0 && "$dakika" -le 3 ]] ; then
 		onek="Tam"
 	elif [[ "$dakika" -ge 4 && "$dakika" -le 26 ]] ; then
@@ -231,29 +245,42 @@ case "$#" in
 			yaklasikSaat $dakika $saat
 		else
 			# parametre "-y" değilse
-			echo "Hatalı Parametre"
+			echo "Hatalı Parametre Girdiniz"
 			exit
 		fi
 		;;
 	3) # Parametre sayısı 3 "üç" ise
 		if [ "$1" = "-d" ] ; then
 			echo "İlk Parametre Doğru"
-			densaat="$2"
-			dendakika="$3"
-			sayi=07
-			echo $((10#$sayi))
 		else  
 			# ilk parametre "-d" değilse
-			echo "Hatalı Parametre"
+			echo "Hatalı Parametre Girdiniz"
 			exit
 		fi
-
-		if [[ "$2" -ge 0 && "$2" -le 23 ]] ; then
-			echo "İkinci Parametre Doğru"
+		
+		$(sayiMi $2)
+		
+		# sayiMi fonksiyonunun saat parametresi yani $2 için alan return değerini tutar
+		return_for_sayiMi_saat=$?
+		
+		$(sayiMi $3)
+		
+		# sayiMi fonksiyonunun saat parametresi yani $2 için alan return değerini tutar
+		return_for_sayiMi_dakika=$?
+		
+		if [[ "$return_for_sayiMi_saat" -eq 1 && "$return_for_sayiMi_dakika" -eq 1 ]] ; then
+			echo "İkisi de sayi"
+			densaat=$(sifiriniAt $2)
+			dendakika=$(sifiriniAt $3)
+			echo "Saat Olarak ${densaat}:${dendakika} girdiniz"
+		else
+			echo "son iki parametre sayı olmalı: saat ve dakika"
+			exit
 		fi
+		
 		;;
 	*)
-		echo "Fazla Parametre Girdiniz"
+		echo "Hatalı Parametre Girdiniz"
 		exit
 		;;
 esac
