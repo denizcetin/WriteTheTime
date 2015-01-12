@@ -6,8 +6,8 @@ saat=`echo $tarih | awk -F ":" '{print $1}'`
 dakika=`echo $tarih | awk -F ":" '{print $2}'`
 
 # Saat Denemeleri Yapacağında Aşağıdaki İki Yorum Satırını Kaldır ve Saati gir
-#saat="06"
-#dakika="10"
+saat=00
+dakika=30
 
 # Sistem Saati (Sayıyla) Ekrana Yazdırılıyor.
 echo "Sistem Saati => ${saat}:${dakika}"
@@ -41,15 +41,12 @@ function gunHesapla {
 		gun="(Akşam)"
 	fi
 	
+	echo "$gun"
 }
 
-# Saati Yaklaşık Olarak Hesaplayan Fonksiyon
-function yaklasikSaat {
-	
-	#gunHesapla fonksiyonunu çağır
-	gunHesapla
-	
-	case "$saat" in
+# Saat bişey'i bişey geçiyor larda ki sayılara gelecek ekleri hesaplayan fonksiyon
+function geceEkiniHesapla (){
+	case "$1" in
 		01|05|08|11|13|17|20|23)
 			geceEki="'i" ;;
 		02|07|12|14|19|00)
@@ -61,8 +58,13 @@ function yaklasikSaat {
 		09|10|21|22)
 			geceEki="'u" ;;
 	esac
-	
-	case "$saat" in
+	echo "$geceEki"
+}
+
+# Saat bişey'e bişey var larda ki sayılara gelecek ekleri hesaplayan fonksiyon
+# Parametre olarak saat alır çünkü kala' larda saat bir artar
+function kalaEkiniHesapla {
+	case "$1" in
 		01|03|04|05|08|11|13|15|16|17|20|23)
 			kalaEki="'e" ;;
 		02|07|12|14|19|00)
@@ -72,44 +74,61 @@ function yaklasikSaat {
 		09|10|21|22)
 			kalaEki="'a" ;;
 	esac
+	echo "$kalaEki"
+}
+
+# Saati Yaklaşık Olarak Hesaplayan Fonksiyon
+function yaklasikSaat {
+	saaty=$saat
+	if [[ "$1" -ge 04 && "$1" -le 26 ]] ; then
+		ek=$(geceEkiniHesapla $saaty)
+	elif [[ "$dakika" -ge 27 && "$dakika" -le 33 ]] ; then
+		ek=" Buçuk"
+	elif [[ "$dakika" -ge 34 && "$dakika" -le 56 ]] ; then
+		saaty=$[$saaty + 1]
+		#burada sıkıntı var çünkü saate 1 ekleyince önündeki sıfır kayboluyor
+		case $saaty in
+			1|2|3|4|5|6|7|8|9)
+				saaty="0$saaty" ;;
+			24)
+				saaty=00 ;;
+		esac
+		ek="$(kalaEkiniHesapla $saaty)"
+	fi
 	
-	case "$2" in
+	case "$saaty" in
 		01|13)
-			saat="Bir" ;;
+			saaty="Bir" ;;
 		02|14)
-			saat="İki" ;;
+			saaty="İki" ;;
 		03|15)
-			saat="Üç" ;;
+			saaty="Üç" ;;
 		04|16)
-			saat="Dört" ;;
+			saaty="Dört" ;;
 		05|17)
-			saat="Beş" ;;
+			saaty="Beş" ;;
 		06|18)
-			saat="Altı" ;;
+			saaty="Altı" ;;
 		07|19)
-			saat="Yedi" ;;
+			saaty="Yedi" ;;
 		08|20)
-			saat="Sekiz" ;;
+			saaty="Sekiz" ;;
 		09|21)
-			saat="Dokuz" ;;
+			saaty="Dokuz" ;;
 		10|22)
-			saat="On" ;;
+			saaty="On" ;;
 		11|23)
-			saat="On Bir" ;;
+			saaty="On Bir" ;;
 		12|00)
-			saat="On İki" ;;
+			saaty="On İki" ;;
 		*)
 			echo "Saat Bozuk" ;;
 esac
 
-	if [[ "$1" -ge 04 && "$1" -le 27 ]] ; then
-		ek="$geceEki"
-	elif [[ "$1" -ge 34 && "$1" -le 56 ]] ; then
-		ek="$kalaEki"
-	fi
+
 	
 	
-	echo "${gun} ${saat}${ek}"
+	echo "$(gunHesapla) ${saaty}${ek}"
 }
 
 function normalSaat {
