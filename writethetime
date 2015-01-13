@@ -6,8 +6,8 @@ saat=`echo $tarih | awk -F ":" '{print $1}'`
 dakika=`echo $tarih | awk -F ":" '{print $2}'`
 
 # Saat Denemeleri Yapacağında Aşağıdaki İki Yorum Satırını Kaldır ve Saati gir
-saat=23
-dakika=45
+#saat=23
+#dakika=45
 
 # Sistem Saati (Sayıyla) Ekrana Yazdırılıyor.
 echo "Sistem Saati => ${saat}:${dakika}"
@@ -163,21 +163,22 @@ function saatiYaziyaCevir {
 function yaklasikSaat {
 	# Saati sıfırlardan arındır ve saaty değişkenine ata
 	# Önemli Not ! $saat değişkenin orjinali bozulmuyor
-	saaty=$(sifiriniAt $saat)
+	local saat=$(sifiriniAt $1)
+	local dakika=$(sifiriniAt $2)
 	if [[ "$dakika" -ge 0 && "$dakika" -le 3 ]] ; then
 		onek="Tam"
 	elif [[ "$dakika" -ge 4 && "$dakika" -le 26 ]] ; then
-		ek=$(geceEkiniHesapla $saaty)
+		ek=$(geceEkiniHesapla $saat)
 	elif [[ "$dakika" -ge 27 && "$dakika" -le 33 ]] ; then
 		ek=" Buçuk"
 	elif [[ "$dakika" -ge 34 && "$dakika" -le 56 ]] ; then
-		saaty=$[$saaty + 1]
-		if [ "$saaty" -eq 24 ] ; then
-			saaty=0
+		saat=$[$saat + 1]
+		ek="$(kalaEkiniHesapla $saat)"
+		if [ "$saat" -eq 24 ] ; then
+			saat=0
 		fi
-		ek="$(kalaEkiniHesapla $saaty)"
 	fi
-	echo "$(gunHesapla) ${onek} $(saatiYaziyaCevir $saaty)${ek}"
+	echo "$(gunHesapla) ${onek} $(saatiYaziyaCevir $saat)${ek}"
 }
 
 # Saati Tam Değeriyle Yazıyla Yazan Fonksiyon
@@ -272,7 +273,7 @@ case "$#" in
 		if [ "$1" = "-y" ] ; then
 			# parametre "-y" ise
 			echo "Yaklaşık Saat"
-			yaklasikSaat $dakika $saat
+			yaklasikSaat $saat $dakika 
 		else
 			# parametre "-y" değilse
 			echo "Hatalı Parametre Girdiniz"
@@ -286,10 +287,10 @@ case "$#" in
 			return_for_saat_dakika_kontrol=$?
 			if [ "$return_for_saat_dakika_kontrol" -eq 1 ] ; then
 				echo "Girilen Saat - Dakika geçerli"
-				saat="$(sifiriniAt $2)"
-				dakika="$(sifiriniAt $3)"
-				echo "Deneysel Saat => ${saat}:${dakika}"
-				yaklasikSaat $dakika $saat
+				#saat="$(sifiriniAt $2)"
+				#dakika="$(sifiriniAt $3)"
+				echo "Deneysel Saat => ${2}:${3}"
+				yaklasikSaat $2 $3
 			else
 				echo "Girilen Saat - Dakika geçerli değil"
 				exit 1
