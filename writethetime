@@ -12,6 +12,13 @@ dakika=45
 # Sistem Saati (Sayıyla) Ekrana Yazdırılıyor.
 echo "Sistem Saati => ${saat}:${dakika}"
 
+
+# Gönderilen Sayının Önündeki Sıfırlarını atan fonksiyon
+# Parametre olarak saat veya dakika alır.
+function sifiriniAt {
+	echo "$((10#$1))"
+}
+
 # Sayı mı değil mi test eden fonksiyon
 # Parametre olarak saat alır.
 # Gelen parametre sayi ise bir "1" sayı değilse "0" döndürür
@@ -26,6 +33,34 @@ function sayiMi {
 	fi
 }
 
+# Gelen Parametreler için Saat'in ve Dakika'nın geçerliliğini (aralıklarını) test eder.
+# İkisi de geçerliyse bir "1" değilse sıfır "0" döndürür.
+# Parametre olarak saat ve dakika alır.
+function saatDakikaKontrol {
+	local saat=$1
+	local dakika=$2
+	
+	# return_for_sayiMi_saat değişkeni sayiMi fonksiyonunun saat parametresi yani $1 için alan return değerini tutar 
+	sayiMi $saat ; return_for_sayiMi_saat=$?
+	
+	# return_for_sayiMi_dakika değişkeni sayiMi fonksiyonunun dakika parametresi yani $2 için alan return değerini tutar	
+	sayiMi $dakika ; return_for_sayiMi_dakika=$?
+	
+	if [[ "$return_for_sayiMi_saat" -eq 1 && "$return_for_sayiMi_dakika" -eq 1 ]] ; then
+		# sayı olduğunu doğrulamadan sıfırlarını atmaya çalışma
+		#sıfırları attıktan sonra değerlerini local değişkenlere ata
+		local saat=$(sifiriniAt $saat)
+		local dakika=$(sifiriniAt $dakika)
+		if [[ "$saat" -ge 0 && "$saat" -le 23 && "$dakika" -ge 0 && "$dakika" -le 59 ]] ; then
+			return 1
+		else
+			return 0
+		fi
+	else
+		return 0
+	fi
+}
+	
 # Öğlen Akşam İkindi Sabah Gece gibi kavramları hesaplayan fonksiyon
 function gunHesapla {
 	if [ "${saat:0:1}" = "0" ] ; then
@@ -90,12 +125,6 @@ function kalaEkiniHesapla {
 	echo "$kalaEki"
 }
 
-# Sıfırlarını atan fonksiyon
-# Parametre olarak saat veya dakika alır.
-function sifiriniAt {
-	echo "$((10#$1))"
-}
-
 # Saati yazıya çeviren fonksiyon
 # Parametre olarak saat alır.
 function saatiYaziyaCevir {
@@ -152,6 +181,7 @@ function yaklasikSaat {
 	echo "$(gunHesapla) ${onek} $(saatiYaziyaCevir $saaty)${ek}"
 }
 
+# Saati Tam Değeriyle Yazıyla Yazan Fonksiyon
 function normalSaat {
 	# Saati Yazıya Çeviren Kısım
 	case "$saat" in
@@ -229,10 +259,11 @@ function normalSaat {
 
 	echo "$saat"
 }
-# parametre yoksa normal saati yazıyla verir.
-# -y parametresi eklenirse saati yaklaşık olarak verir.
-# -d saat dakika parametresi eklenirse saati deneysel olarak girilen saate göre verir
+
 # Bu case programa verilen parametre sayısı üzerinden işlem yapar.
+# parametre yoksa normal saati yazıyla verir.
+# parametre sayısı 1 "bir" ise ve parametre -y ise saati yaklaşık olarak verir.
+# parametre sayısı 3 "üç" ise ve parametre -d saat dakika şeklinde (formatında) ise bu girilen saat dakika değerine göre işlem yapılır.
 case "$#" in
 	0)	# Parametre sayısı 0 "sıfır" ise (Parametre Yoksa)
 		echo "Normal Saat"
@@ -251,33 +282,24 @@ case "$#" in
 		;;
 	3) # Parametre sayısı 3 "üç" ise
 		if [ "$1" = "-d" ] ; then
-			echo "İlk Parametre Doğru"
+			# ilk parametre "-d" ise
+			saatDakikaKontrol $2 $3
+			return_for_saat_dakika_kontrol=$?
+			if [ "$return_for_saat_dakika_kontrol" -eq 1 ] ; then
+				echo "Girilen Saat - Dakika geçerli"
+				saat="$(sifiriniAt $2)"
+				dakika="$(sifiriniAt $3)"
+				echo "Deneysel Saat => ${saat}:${dakika}"
+				yaklasikSaat $dakika $saat
+			else
+				echo "Girilen Saat - Dakika geçerli değil"
+				exit 1
+			fi
 		else  
 			# ilk parametre "-d" değilse
 			echo "Hatalı Parametre Girdiniz"
 			exit
 		fi
-		
-		$(sayiMi $2)
-		
-		# sayiMi fonksiyonunun saat parametresi yani $2 için alan return değerini tutar
-		return_for_sayiMi_saat=$?
-		
-		$(sayiMi $3)
-		
-		# sayiMi fonksiyonunun saat parametresi yani $2 için alan return değerini tutar
-		return_for_sayiMi_dakika=$?
-		
-		if [[ "$return_for_sayiMi_saat" -eq 1 && "$return_for_sayiMi_dakika" -eq 1 ]] ; then
-			echo "İkisi de sayi"
-			densaat=$(sifiriniAt $2)
-			dendakika=$(sifiriniAt $3)
-			echo "Saat Olarak ${densaat}:${dendakika} girdiniz"
-		else
-			echo "son iki parametre sayı olmalı: saat ve dakika"
-			exit
-		fi
-		
 		;;
 	*)
 		echo "Hatalı Parametre Girdiniz"
