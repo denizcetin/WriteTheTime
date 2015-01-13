@@ -5,3 +5,28 @@ Bu script saati yazıya dönüştürmeyi amaçlayan deneysel bir projedir.
 Projenin yüksek bir iddası yoktur.
 Bash programlama örneği yapmak amacıyla başlatılmış bir projedir.
 
+Kullanımı
+
+writethetime dosyasına çalıştırma izni verin
+
+	chmod +x writethetime
+
+şeklinde.
+
+Sistem Saatini Yazıyla Yazdırmak için
+
+	./writethetime
+	
+komutu verilir.
+
+Sistem Saatini yaklaşık olarak (halk ağzıyla) vermek için 
+
+	./writethetime -y
+
+şeklinde -y parametresiyle çalıştırın.
+
+Sizin belirlediğiniz (elle girdiğiniz) bir saati yaklaşık olarak yazdırmak için
+
+	./writethetime -d 22 57
+	
+şeklindeki gibi -d saat dakika parametresiyle çalıştırın.

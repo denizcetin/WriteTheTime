@@ -12,7 +12,6 @@ dakika=45
 # Sistem Saati (Sayıyla) Ekrana Yazdırılıyor.
 echo "Sistem Saati => ${saat}:${dakika}"
 
-
 # Gönderilen Sayının Önündeki Sıfırlarını atan fonksiyon
 # Parametre olarak saat veya dakika alır.
 function sifiriniAt {
