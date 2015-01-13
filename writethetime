@@ -119,35 +119,10 @@ function kalaEkiniHesapla {
 # Saati yazıya çeviren fonksiyon
 # Parametre olarak saat alır.
 function saatiYaziyaCevir {
-	case "$1" in
-		1|13)
-			saatyazi="Bir" ;;
-		2|14)
-			saatyazi="İki" ;;
-		3|15)
-			saatyazi="Üç" ;;
-		4|16)
-			saatyazi="Dört" ;;
-		5|17)
-			saatyazi="Beş" ;;
-		6|18)
-			saatyazi="Altı" ;;
-		7|19)
-			saatyazi="Yedi" ;;
-		8|20)
-			saatyazi="Sekiz" ;;
-		9|21)
-			saatyazi="Dokuz" ;;
-		10|22)
-			saatyazi="On" ;;
-		11|23)
-			saatyazi="On Bir" ;;
-		12|0)
-			saatyazi="On İki" ;;
-		*)
-			echo "Saat Bozuk"
-			exit ;;
-	esac
+	array=("Bir" "İki" "Üç" "Dört" "Beş" "Altı" "Yedi" "Sekiz" "Dokuz" "On" "On Bir" "On İki")
+	indis=$(($1 % 12))
+	indis=$[$indis-1]
+	saatyazi=${array[$indis]}
 	echo "$saatyazi"
 }
 
