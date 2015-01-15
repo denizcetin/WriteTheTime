@@ -6,8 +6,8 @@ saat=`echo $tarih | awk -F ":" '{print $1}'`
 dakika=`echo $tarih | awk -F ":" '{print $2}'`
 
 # Saat Denemeleri Yapacağında Aşağıdaki İki Yorum Satırını Kaldır ve Saati gir
-#saat=23
-#dakika=37
+#saat=00
+#dakika=00
 
 # Sistem Saati (Sayıyla) Ekrana Yazdırılıyor.
 echo "Sistem Saati => ${saat}:${dakika}"
@@ -62,7 +62,8 @@ function saatDakikaKontrol {
 	
 # Öğlen Akşam İkindi Sabah Gece gibi kavramları hesaplayan fonksiyon
 function gunHesapla {
-	case "$1" in
+	local saat=$(sifiriniAt $1)
+	case "$saat" in
 		0)
 			echo "(Gece yarısı)" ;;
 		1|2|3|4)
@@ -85,7 +86,8 @@ function gunHesapla {
 # Saat bişey'i bişey geçiyor larda ki sayılara gelecek ekleri hesaplayan fonksiyon
 # Parametre olarak saat alır.
 function geceEkiniHesapla {
-	case "$1" in
+	local saat=$(sifiriniAt $1)
+	case "$saat" in
 		1|5|8|11|13|17|20|23)
 			geceEki="'i" ;;
 		2|7|12|14|19|0)
@@ -103,7 +105,8 @@ function geceEkiniHesapla {
 # Saat bişey'e bişey var larda ki sayılara gelecek ekleri hesaplayan fonksiyon
 # Parametre olarak saat alır.
 function kalaEkiniHesapla {
-	case "$1" in
+	local saat=$(sifiriniAt $1)
+	case "$saat" in
 		1|3|4|5|8|11|13|15|16|17|20|23)
 			kalaEki="'e" ;;
 		2|7|12|14|19|0)
@@ -119,21 +122,54 @@ function kalaEkiniHesapla {
 # Saati yazıya çeviren fonksiyon
 # Parametre olarak saat alır.
 function saatiYaziyaCevir {
+	local saat=$(sifiriniAt $1)
 	array=("Bir" "İki" "Üç" "Dört" "Beş" "Altı" "Yedi" "Sekiz" "Dokuz" "On" "On Bir" "On İki")
-	indis=$(($1 % 12))
+	indis=$(($saat % 12))
 	indis=$[$indis-1]
 	saatyazi=${array[$indis]}
 	echo "$saatyazi"
 }
 
+# Dakikayı yazıya çeviren fonksiyon
+# Parametre olarak dakika alır.
+function dakikayiYaziyaCevir {
+	local dakika=$(sifiriniAt $1)
+	#echo "$dakika"
+	# Sıfırları attığımız için eğer dakika nın ilk basamağı sıfır ise dakika gerçekten sıfırdır.
+	if [ "$dakika" -eq 0 ] ; then
+		dakikayazi="Sıfır"
+	# Dakika Tek Basamaklı Demektir.
+	elif [ "${dakika:1:1}" = "" ] ; then
+		dakika_tek_basamak=("Bir" "İki" "Üç" "Dört" "Beş" "Altı" "Yedi" "Sekiz" "Dokuz")
+		indis=${dakika:0:1}
+		indis=$[$indis-1]
+		dakikayazi=${dakika_tek_basamak[$indis]}
+	# Dakika Çift Basamaklı Demektir
+	else
+		dakika_ilk_basamak=("On" "Yirmi" "Otuz" "Kırk" "Elli")
+		indis=${dakika:0:1}
+		indis=$[$indis-1]
+		dakika1=${dakika_ilk_basamak[$indis]}
+		dakika_ikinci_basamak=("" "Bir" "İki" "Üç" "Dört" "Beş" "Altı" "Yedi" "Sekiz" "Dokuz")
+		indis=${dakika:1:1}
+		dakika2=${dakika_ikinci_basamak[$indis]}
+		dakikayazi="$dakika1 $dakika2"
+	fi
+	echo "$dakikayazi"
+}
+
 
 # Saati Yaklaşık Olarak Hesaplayan Fonksiyon
+# Parametre olarak saat ve dakika alır.
 function yaklasikSaat {
 	# Saati sıfırlardan arındır ve saaty değişkenine ata
 	# Önemli Not ! $saat değişkenin orjinali bozulmuyor
 	local saat=$(sifiriniAt $1)
 	local dakika=$(sifiriniAt $2)
 	if [[ "$dakika" -ge 0 && "$dakika" -le 3 ]] ; then
+		onek="Tam"
+	elif [[ "$dakika" -ge 57 && "$dakika" -le 59 ]] ; then
+		saat=$[$saat + 1]
 		onek="Tam"
 	elif [[ "$dakika" -ge 4 && "$dakika" -le 26 ]] ; then
 		ek=$(geceEkiniHesapla $saat)
@@ -150,58 +186,19 @@ function yaklasikSaat {
 }
 
 # Saati Tam Değeriyle Yazıyla Yazan Fonksiyon
-# Parametre olarak saat alır.
+# Parametre olarak saat ve dakika alır.
 function normalSaat {
-	local saat=$(sifiriniAt $saat)
+	local saat=$(sifiriniAt $1)
 	ek=$(geceEkiniHesapla $saat)
 	gun=$(gunHesapla $saat)
 	
 	# Saati Yazıya Çevirdik
-	saat=$(saatiYaziyaCevir $1)
+	saatyazi=$(saatiYaziyaCevir $1)
 	
-	# Dakikanın İlk Hanesini Yazıya Çeviren Kısım
-	case "${dakika:0:1}" in
-		0)
-			dakika1="Sıfır" ;;
-		1)
-			dakika1="On" ;;
-		2)
-			dakika1="Yirmi" ;;
-		3)
-			dakika1="Otuz" ;;
-		4)
-			dakika1="Kırk" ;;
-		5)
-			dakika1="Elli" ;;
-		*)
-			dakika1="" ;;
-	esac
-
-	# Dakikanın İkinci Hanesini Yazıya Çeviren Kısım
-	case "${dakika:1:1}" in
-		1)
-			dakika2="Bir" ;;
-		2)
-			dakika2="İki" ;;
-		3)
-			dakika2="Üç" ;;
-		4)
-			dakika2="Dört" ;;
-		5)
-			dakika2="Beş" ;;
-		6)
-			dakika2="Altı" ;;
-		7)
-			dakika2="Yedi" ;;
-		8)
-			dakika2="Sekiz" ;;
-		9)
-			dakika2="Dokuz" ;;
-		*)
-			dakika2="" ;;
-	esac
+	# Dakikayı Yazıya Çevirdik
+	dakikayazi=$(dakikayiYaziyaCevir $2)
 	
-	echo "$saat$ek ${dakika1} ${dakika2} geçiyor."
+	echo "$(gunHesapla $saat) $saatyazi$ek $dakikayazi geçiyor."
 }
 
 # Bu case programa verilen parametre sayısı üzerinden işlem yapar.
@@ -211,7 +208,7 @@ function normalSaat {
 case "$#" in
 	0)	# Parametre sayısı 0 "sıfır" ise (Parametre Yoksa)
 		echo "Normal Saat"
-			normalSaat $saat
+			normalSaat $saat $dakika
 		;;
 	1) # Parametre sayısı 1 "bir" ise
 		if [ "$1" = "-y" ] ; then
