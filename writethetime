@@ -205,6 +205,17 @@ function normalSaat {
 # parametre yoksa normal saati yazıyla verir.
 # parametre sayısı 1 "bir" ise ve parametre -y ise saati yaklaşık olarak verir.
 # parametre sayısı 3 "üç" ise ve parametre -d saat dakika şeklinde (formatında) ise bu girilen saat dakika değerine göre işlem yapılır.
+
+
+# Yeni Plan :
+# parametre yoksa normal saati versin.
+# -y parametresi yaklaşık saati versin.
+# -d parametresi normal saati deneysel saat parametreleriyle versin.
+# -y -d parametresi yaklaşık saati deneysel saat parametreleriyle versin.
+# -m parametresi menüyle kullanım olanağı versin.
+
+# Öncelikli olarak -m parametresi için menü yapılacak.
+
 case "$#" in
 	0)	# Parametre sayısı 0 "sıfır" ise (Parametre Yoksa)
 		echo "Normal Saat"
