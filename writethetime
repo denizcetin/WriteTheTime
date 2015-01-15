@@ -126,6 +126,7 @@ function saatiYaziyaCevir {
 	echo "$saatyazi"
 }
 
+
 # Saati Yaklaşık Olarak Hesaplayan Fonksiyon
 function yaklasikSaat {
 	# Saati sıfırlardan arındır ve saaty değişkenine ata
@@ -149,38 +150,15 @@ function yaklasikSaat {
 }
 
 # Saati Tam Değeriyle Yazıyla Yazan Fonksiyon
+# Parametre olarak saat alır.
 function normalSaat {
-	saatg=$(sifiriniAt $saat)
-	# Saati Yazıya Çeviren Kısım
-	case "$saat" in
-		1|13)
-			saat="Biri" ;;
-		2|14)
-			saat="İkiyi" ;;
-		3|15)
-			saat="Üçü" ;;
-		4|16)
-			saat="Dördü" ;;
-		5|17)
-			saat="Beşi" ;;
-		6|18)
-			saat="Altıyı" ;;
-		7|19)
-			saat="Yediyi" ;;
-		8|20)
-			saat="Sekizi" ;;
-		9|21)
-			saat="Dokuzu" ;;
-		10|22)
-			saat="Onu" ;;
-		11|23)
-			saat="On Biri" ;;
-		12|00)
-			saat="On İkiyi" ;;
-		*)
-			echo "Saat Bozuk" ;;
-	esac
-
+	local saat=$(sifiriniAt $saat)
+	ek=$(geceEkiniHesapla $saat)
+	gun=$(gunHesapla $saat)
+	
+	# Saati Yazıya Çevirdik
+	saat=$(saatiYaziyaCevir $1)
+	
 	# Dakikanın İlk Hanesini Yazıya Çeviren Kısım
 	case "${dakika:0:1}" in
 		0)
@@ -223,8 +201,7 @@ function normalSaat {
 			dakika2="" ;;
 	esac
 	
-	saat="$(gunHesapla $saatg) ${saat} ${dakika1} ${dakika2} geçiyor."
-	echo "$saat"
+	echo "$saat$ek ${dakika1} ${dakika2} geçiyor."
 }
 
 # Bu case programa verilen parametre sayısı üzerinden işlem yapar.
@@ -234,7 +211,7 @@ function normalSaat {
 case "$#" in
 	0)	# Parametre sayısı 0 "sıfır" ise (Parametre Yoksa)
 		echo "Normal Saat"
-			normalSaat
+			normalSaat $saat
 		;;
 	1) # Parametre sayısı 1 "bir" ise
 		if [ "$1" = "-y" ] ; then
