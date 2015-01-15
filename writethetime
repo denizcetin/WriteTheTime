@@ -201,6 +201,37 @@ function normalSaat {
 	echo "$(gunHesapla $saat) $saatyazi$ek $dakikayazi geçiyor."
 }
 
+# Öncelikli olarak -m parametresi için menü yapıldı.
+function menu {
+	options=("Normal Saat" "Yaklaşık Saat" "Deneysel Saat" "Çıkış Yap")
+	select opt in "${options[@]}" ; do
+		case $opt in
+			"Normal Saat")
+				echo "Normal Saat"
+				normalSaat $saat $dakika
+				;;
+			"Yaklaşık Saat")
+				echo "Yaklaşık Saat"
+				yaklasikSaat $saat $dakika 
+				;;
+			"Deneysel Saat")
+				echo "Deneysel Saat"
+				;;
+			"Çıkış Yap")
+				echo "Çıkış Yapıldı"
+				  
+				break
+				;;
+			*)
+				echo ; echo "Hatalı Seçim"
+				echo "Devam Etmek İçin bir tuşa basın" ; read -n1 kbd       
+				menu
+				break
+				;;
+		esac                     
+	done
+}
+
 # Bu case programa verilen parametre sayısı üzerinden işlem yapar.
 # parametre yoksa normal saati yazıyla verir.
 # parametre sayısı 1 "bir" ise ve parametre -y ise saati yaklaşık olarak verir.
@@ -214,7 +245,7 @@ function normalSaat {
 # -y -d parametresi yaklaşık saati deneysel saat parametreleriyle versin.
 # -m parametresi menüyle kullanım olanağı versin.
 
-# Öncelikli olarak -m parametresi için menü yapılacak.
+# Öncelikli olarak -m parametresi için menü yapıldı.
 
 case "$#" in
 	0)	# Parametre sayısı 0 "sıfır" ise (Parametre Yoksa)
@@ -226,6 +257,8 @@ case "$#" in
 			# parametre "-y" ise
 			echo "Yaklaşık Saat"
 			yaklasikSaat $saat $dakika 
+		elif [ "$1" = "-m" ] ; then
+			menu
 		else
 			# parametre "-y" değilse
 			echo "Hatalı Parametre Girdiniz"
