@@ -11,11 +11,14 @@ function sistemZamani {
 # Parametre geldiyse deneysel saati, parametre gelmediyse sistem saatini
 # Gerekli Değişkenlere Atıyor.
 function saatiAyarla {
-	if [[ "$#" -eq 0 ]] ; then
-		# Sistem Zamanı Kullanılacak Demek.
+	# Sistem Zamanını $sistem_saati ve $sistem_dakikasi değişkenlerine aktar.
+	sistemZamani
+	
+	# Sistem Saatini (Sayıyla) Ekrana Yazdır. (Karşılaştırma ve Kontrol Amaçlı)
+	echo "Sistem Saati => ${sistem_saati}:${sistem_dakikasi}"
 		
-		# Sistem Zamanını $sistem_saati ve $sistem_dakikasi değişkenlerine aktar.
-		sistemZamani
+	if [[ "$#" -eq 0 ]] ; then
+		# Parametre yoksa - Sistem Zamanı Kullanılacak Demek.
 		
 		# Sistem Saatinin ve Sistem Dakikasının Gereksiz Sıfırlarını at ve
 		# $temiz_saat ve $temiz_dakika değişkenlerine aktar.
@@ -23,14 +26,63 @@ function saatiAyarla {
 		temiz_saat=$(sifiriniAt $sistem_saati)
 		temiz_dakika=$(sifiriniAt $sistem_dakikasi)
 
-		# Sistem Saatini (Sayıyla) Ekrana Yazdır. (Karşılaştırma ve Kontrol Amaçlı)
-		echo "Sistem Saati => ${sistem_saati}:${sistem_dakikasi}"
-		
-		# Temizlenen Saati ve Dakikayı Ekrana Yazdır (Kontrol Amaçlı)
-		echo "Kullanılacak Saat => ${temiz_saat}:${temiz_dakika}"
 	else 
-		# Deneysel Zaman Kullanılacak Demek.
-		echo "Kullanılacak Saat =>"
+		# Parametre Sayısı Sıfır Değilse - Deneysel Zaman Kullanılacak Demek.
+		
+		# Gelen Paramatreleri $deneysel_saat ve $deneysel_dakika değişkenlerine ata
+		deneysel_saat=$1
+		deneysel_dakika=$2
+		
+		# Zamanın geçerli olup olmadığı kontrol edilir.
+		zamanKontrol $deneysel_saat $deneysel_dakika
+		
+		# zamanKontrol fonksiyonunun geri dönüş değeri
+		return_for_zamanKontrol=$?
+		
+		if [[ "$return_for_zamanKontrol" -eq 1 ]] ; then
+			# Girilen zaman geçerliyse
+			
+			# Girilen Deneysel Saatin ve Deneysel Dakikanın
+			# Gereksiz Sıfırlarını at ve
+			# $temiz_saat ve $temiz_dakika değişkenlerine aktar.
+			temiz_saat=$(sifiriniAt $deneysel_saat)
+			temiz_dakika=$(sifiriniAt $deneysel_dakika)
+		else
+			echo "Girilen Zaman Geçerli Bir Zaman Değildir." 
+			echo "Lütfen Geçerli Bir zaman belirterek programı tekrar çalıştırın."
+			exit
+		fi
+	fi
+	# Temizlenen Saati ve Dakikayı Ekrana Yazdır (Kontrol Amaçlı)
+	echo "Kullanılacak Saat => ${temiz_saat}:${temiz_dakika}"
+}
+
+# Deneysel Zaman için girilen zamanın geçerliliğini kontrol eden fonksiyon
+# Parametre olarak sırasıyla saat ve dakika alınır. Alınan saat ve dakika
+# geçerliyse "1" geçerli değilse "0" döndürür.
+function zamanKontrol {
+	# Öncelikle gelen parametreleri local değişkenlere ata
+	local saat=$1
+	local dakika=$2
+	
+	# Not! Saatin ve Dakikanın "sayı" olduğunu doğrulamadan sıfırlarını atmaya çalışma
+	# Çünkü sayı değilse hata alırsın.
+	
+	if [[ "$(sayiMi $saat)" = "evet" && "$(sayiMi $dakika)" = "evet" ]] ; then
+		# Belirtilen aralıklara uyuorsa - saat ve dakika sayı cinsinden demektir.
+		saat=$(sifiriniAt $saat)
+		dakika=$(sifiriniAt $dakika)
+		
+		#
+		if [[ "$saat" -ge 0 && "$saat" -le 23 && "$dakika" -ge 0 && "$dakika" -le 59 ]] ; then
+			# saat ve sayı zaman formatına uyuyor demektir. 0<saat<24 0<dakika<60
+			return 1
+		else
+			return 0
+		fi
+	else
+		echo "aaaaa"
+		return 0
 	fi
 }
 
@@ -40,45 +92,17 @@ function sifiriniAt {
 	echo "$((10#$1))"
 }
 
-# Sayı mı değil mi test eden fonksiyon
-# Parametre olarak saat alır.
-# Gelen parametre sayi ise bir "1" sayı değilse "0" döndürür
+# Gelen Değişken Sayı mı değil mi test eden fonksiyon
+# "1" adet değişken/parametre alır
+# Gelen parametre sayi "evet" değilse "hayır" yazdırır
 function sayiMi {
 	yournumber="$1"
 	# sayı için doku
 	re='^[0-9]+$'
 	if ! [[ $yournumber =~ $re ]] ; then
-		return 0
+		echo "hayır"
 	else
-		return 1
-	fi
-}
-
-# Gelen Parametreler için Saat'in ve Dakika'nın geçerliliğini (aralıklarını) test eder.
-# İkisi de geçerliyse bir "1" değilse sıfır "0" döndürür.
-# Parametre olarak saat ve dakika alır.
-function saatDakikaKontrol {
-	local saat=$1
-	local dakika=$2
-	
-	# return_for_sayiMi_saat değişkeni sayiMi fonksiyonunun saat parametresi yani $1 için alan return değerini tutar 
-	sayiMi $saat ; return_for_sayiMi_saat=$?
-	
-	# return_for_sayiMi_dakika değişkeni sayiMi fonksiyonunun dakika parametresi yani $2 için alan return değerini tutar	
-	sayiMi $dakika ; return_for_sayiMi_dakika=$?
-	
-	if [[ "$return_for_sayiMi_saat" -eq 1 && "$return_for_sayiMi_dakika" -eq 1 ]] ; then
-		# sayı olduğunu doğrulamadan sıfırlarını atmaya çalışma
-		#sıfırları attıktan sonra değerlerini local değişkenlere ata
-		local saat=$(sifiriniAt $saat)
-		local dakika=$(sifiriniAt $dakika)
-		if [[ "$saat" -ge 0 && "$saat" -le 23 && "$dakika" -ge 0 && "$dakika" -le 59 ]] ; then
-			return 1
-		else
-			return 0
-		fi
-	else
-		return 0
+		echo "evet"
 	fi
 }
 	
@@ -189,9 +213,11 @@ function yaklasikSaat {
 	local dakika=$(sifiriniAt $2)
 	if [[ "$dakika" -ge 0 && "$dakika" -le 3 ]] ; then
 		onek="Tam"
+		ek=""
 	elif [[ "$dakika" -ge 57 && "$dakika" -le 59 ]] ; then
 		saat=$[$saat + 1]
 		onek="Tam"
+		ek=""
 	elif [[ "$dakika" -ge 4 && "$dakika" -le 26 ]] ; then
 		ek=$(geceEkiniHesapla $saat)
 		if [[ "$dakika" -le 7 ]] ; then dakikayaz="Beş"
@@ -217,7 +243,7 @@ function yaklasikSaat {
 			saat=0
 		fi
 	fi
-	echo "$(gunHesapla $saat) ${onek} $(saatiYaziyaCevir $saat)${ek} $dakikayaz $sonek"
+	echo "Yaklaşık Saat => $(gunHesapla $saat) ${onek} $(saatiYaziyaCevir $saat)${ek} $dakikayaz $sonek"
 }
 
 # Saati Tam Değeriyle Yazıyla Yazan Fonksiyon
@@ -233,7 +259,7 @@ function normalSaat {
 	# Dakikayı Yazıya Çevirdik
 	dakikayazi=$(dakikayiYaziyaCevir $2)
 	
-	echo "$(gunHesapla $saat) $saatyazi$ek $dakikayazi Geçiyor."
+	echo "Normal Saat => $(gunHesapla $saat) $saatyazi$ek $dakikayazi Geçiyor."
 }
 
 # Öncelikli olarak -m parametresi için menü yapıldı.
@@ -242,15 +268,20 @@ function menu {
 	select opt in "${options[@]}" ; do
 		case $opt in
 			"Normal Saat")
-				echo "Normal Saat"
 				normalSaat $temiz_saat $temiz_dakika
 				;;
 			"Yaklaşık Saat")
-				echo "Yaklaşık Saat"
 				yaklasikSaat $temiz_saat $temiz_dakika 
 				;;
 			"Deneysel Saat")
+				echo "Saati Girin (00-23)"
+				read saat
+				echo "Dakikayı Girin (00-59)"
+				read dakika
 				echo "Deneysel Saat"
+				saatiAyarla $saat $dakika
+				normalSaat $temiz_saat $temiz_dakika 
+				yaklasikSaat $temiz_saat $temiz_dakika
 				;;
 			"Çıkış Yap")
 				echo "Çıkış Yapıldı"
@@ -270,33 +301,24 @@ function menu {
 # Bu case programa verilen parametre sayısı üzerinden işlem yapar.
 # parametre yoksa normal saati yazıyla verir.
 # parametre sayısı 1 "bir" ise ve parametre -y ise saati yaklaşık olarak verir.
+# parametre sayısı 1 "bir" ise ve parametre -m ise menü'yü ekrana verir.
 # parametre sayısı 3 "üç" ise ve parametre -d saat dakika şeklinde (formatında) ise bu girilen saat dakika değerine göre işlem yapılır.
-
-# Yeni Plan :
-# parametre yoksa normal saati versin.
-# -y parametresi yaklaşık saati versin.
-# -d parametresi normal saati deneysel saat parametreleriyle versin.
-# -y -d parametresi yaklaşık saati deneysel saat parametreleriyle versin.
-# -m parametresi menüyle kullanım olanağı versin.
 
 # Fonksiyonlara Gönderilen/Gönderilecek olan tüm zaman birimleri gereksiz
 #	(yani sayıların önündeki) sıfırlardan arındırılmış olmalı. 
 #	Çünkü bir sayının önünde sıfır olduğunda bash bunu hexedecimal sayı
 #	olarak adlandırıyor.
 
-
 case "$#" in
 	0)	
 		#Parametre sayısı 0 "sıfır" ise (Parametre Yoksa)
 		saatiAyarla
-		echo "Normal Saat"
 		normalSaat $temiz_saat $temiz_dakika
 		;;
 	1) # Parametre sayısı 1 "bir" ise
 		saatiAyarla
 		if [ "$1" = "-y" ] ; then
 			# parametre "-y" ise
-			echo "Yaklaşık Saat"
 			yaklasikSaat $temiz_saat $temiz_dakika 
 		elif [ "$1" = "-m" ] ; then
 			menu
@@ -309,16 +331,9 @@ case "$#" in
 	3) # Parametre sayısı 3 "üç" ise
 		if [ "$1" = "-d" ] ; then
 			# ilk parametre "-d" ise
-			saatDakikaKontrol $2 $3
-			return_for_saat_dakika_kontrol=$?
-			if [ "$return_for_saat_dakika_kontrol" -eq 1 ] ; then
-				echo "Girilen Saat - Dakika geçerli"
-				echo "Deneysel Saat => ${2}:${3}"
-				yaklasikSaat $2 $3
-			else
-				echo "Girilen Saat - Dakika geçerli değil"
-				exit 1
-			fi
+			saatiAyarla $2 $3
+			normalSaat $temiz_saat $temiz_dakika 
+			yaklasikSaat $temiz_saat $temiz_dakika
 		else  
 			# ilk parametre "-d" değilse
 			echo "Hatalı Parametre Girdiniz"
