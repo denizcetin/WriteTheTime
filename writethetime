@@ -1,16 +1,38 @@
 #!/bin/bash
 
+# Sistem Saatinin Gerekli Değişkenlere Atamasını Yapan Fonksiyon
 # Zaman Bilgisini "Saat:Dakika" şeklinde alıp değişkenlere ataması yapılıyor.
-tarih=`date +"%T" | awk -F ":" '{print $1":"$2}'`
-saat=`echo $tarih | awk -F ":" '{print $1}'`
-dakika=`echo $tarih | awk -F ":" '{print $2}'`
+function sistemZamani {							
+	sistem_tarihi=`date +"%T" | awk -F ":" '{print $1":"$2}'`
+	sistem_saati=`echo $sistem_tarihi | awk -F ":" '{print $1}'`
+	sistem_dakikasi=`echo $sistem_tarihi | awk -F ":" '{print $2}'`
+}
 
-# Saat Denemeleri Yapacağında Aşağıdaki İki Yorum Satırını Kaldır ve Saati gir
-#saat=00
-#dakika=00
+# Parametre geldiyse deneysel saati, parametre gelmediyse sistem saatini
+# Gerekli Değişkenlere Atıyor.
+function saatiAyarla {
+	if [[ "$#" -eq 0 ]] ; then
+		# Sistem Zamanı Kullanılacak Demek.
+		
+		# Sistem Zamanını $sistem_saati ve $sistem_dakikasi değişkenlerine aktar.
+		sistemZamani
+		
+		# Sistem Saatinin ve Sistem Dakikasının Gereksiz Sıfırlarını at ve
+		# $temiz_saat ve $temiz_dakika değişkenlerine aktar.
+		# Artık her fonksiyonda sifiriniAt fonksiyonu kullanmaya gerek kalmayacak.
+		temiz_saat=$(sifiriniAt $sistem_saati)
+		temiz_dakika=$(sifiriniAt $sistem_dakikasi)
 
-# Sistem Saati (Sayıyla) Ekrana Yazdırılıyor.
-echo "Sistem Saati => ${saat}:${dakika}"
+		# Sistem Saatini (Sayıyla) Ekrana Yazdır. (Karşılaştırma ve Kontrol Amaçlı)
+		echo "Sistem Saati => ${sistem_saati}:${sistem_dakikasi}"
+		
+		# Temizlenen Saati ve Dakikayı Ekrana Yazdır (Kontrol Amaçlı)
+		echo "Kullanılacak Saat => ${temiz_saat}:${temiz_dakika}"
+	else 
+		# Deneysel Zaman Kullanılacak Demek.
+		echo "Kullanılacak Saat =>"
+	fi
+}
 
 # Gönderilen Sayının Önündeki Sıfırlarını atan fonksiyon
 # Parametre olarak saat veya dakika alır.
@@ -158,7 +180,6 @@ function dakikayiYaziyaCevir {
 	echo "$dakikayazi"
 }
 
-
 # Saati Yaklaşık Olarak Hesaplayan Fonksiyon
 # Parametre olarak saat ve dakika alır.
 function yaklasikSaat {
@@ -202,7 +223,7 @@ function yaklasikSaat {
 # Saati Tam Değeriyle Yazıyla Yazan Fonksiyon
 # Parametre olarak saat ve dakika alır.
 function normalSaat {
-	local saat=$(sifiriniAt $1)
+	local saat=$1
 	ek=$(geceEkiniHesapla $saat)
 	gun=$(gunHesapla $saat)
 	
@@ -222,11 +243,11 @@ function menu {
 		case $opt in
 			"Normal Saat")
 				echo "Normal Saat"
-				normalSaat $saat $dakika
+				normalSaat $temiz_saat $temiz_dakika
 				;;
 			"Yaklaşık Saat")
 				echo "Yaklaşık Saat"
-				yaklasikSaat $saat $dakika 
+				yaklasikSaat $temiz_saat $temiz_dakika 
 				;;
 			"Deneysel Saat")
 				echo "Deneysel Saat"
@@ -251,7 +272,6 @@ function menu {
 # parametre sayısı 1 "bir" ise ve parametre -y ise saati yaklaşık olarak verir.
 # parametre sayısı 3 "üç" ise ve parametre -d saat dakika şeklinde (formatında) ise bu girilen saat dakika değerine göre işlem yapılır.
 
-
 # Yeni Plan :
 # parametre yoksa normal saati versin.
 # -y parametresi yaklaşık saati versin.
@@ -259,18 +279,25 @@ function menu {
 # -y -d parametresi yaklaşık saati deneysel saat parametreleriyle versin.
 # -m parametresi menüyle kullanım olanağı versin.
 
-# Öncelikli olarak -m parametresi için menü yapıldı.
+# Fonksiyonlara Gönderilen/Gönderilecek olan tüm zaman birimleri gereksiz
+#	(yani sayıların önündeki) sıfırlardan arındırılmış olmalı. 
+#	Çünkü bir sayının önünde sıfır olduğunda bash bunu hexedecimal sayı
+#	olarak adlandırıyor.
+
 
 case "$#" in
-	0)	# Parametre sayısı 0 "sıfır" ise (Parametre Yoksa)
+	0)	
+		#Parametre sayısı 0 "sıfır" ise (Parametre Yoksa)
+		saatiAyarla
 		echo "Normal Saat"
-			normalSaat $saat $dakika
+		normalSaat $temiz_saat $temiz_dakika
 		;;
 	1) # Parametre sayısı 1 "bir" ise
+		saatiAyarla
 		if [ "$1" = "-y" ] ; then
 			# parametre "-y" ise
 			echo "Yaklaşık Saat"
-			yaklasikSaat $saat $dakika 
+			yaklasikSaat $temiz_saat $temiz_dakika 
 		elif [ "$1" = "-m" ] ; then
 			menu
 		else
