@@ -1,11 +1,161 @@
 #!/bin/bash
 
+## Temel Fonksiyonlar
+
 # Sistem Saatinin Gerekli Değişkenlere Atamasını Yapan Fonksiyon
 # Zaman Bilgisini "Saat:Dakika" şeklinde alıp değişkenlere ataması yapılıyor.
 function sistemZamani {							
 	sistem_tarihi=`date +"%T" | awk -F ":" '{print $1":"$2}'`
 	sistem_saati=`echo $sistem_tarihi | awk -F ":" '{print $1}'`
 	sistem_dakikasi=`echo $sistem_tarihi | awk -F ":" '{print $2}'`
+}
+
+# Gelen Değişken Sayı mı değil mi test eden fonksiyon
+# "1" adet değişken/parametre alır
+# Gelen parametre sayıysa "evet" değilse "hayır" yazdırır
+function sayiMi {
+	yournumber="$1"
+	# sayı için doku
+	re='^[0-9]+$'
+	if ! [[ $yournumber =~ $re ]] ; then
+		echo "hayır"
+	else
+		echo "evet"
+	fi
+}
+	
+# Gönderilen Sayının Önündeki Sıfırlarını atan fonksiyon
+# Parametre olarak saat veya dakika alır.
+function sifiriniAt {
+	echo "$((10#$1))"
+}
+
+# Öğlen Akşam İkindi Sabah Gece gibi kavramları hesaplayan fonksiyon
+function gunHesapla {
+	local saat=$1
+	case "$saat" in
+		0)
+			echo "(Gece yarısı)" ;;
+		1|2|3|4)
+			echo "(Gece)" ;;
+		5|6|7|8|9)
+			echo "(Sabah)" ;;
+		10|11)
+			echo "(Öğleden Önce)" ;;
+		12|13)
+			echo "(Öğleyin)" ;;
+		14|15)
+			echo "(İkindi)" ;;
+		16|17|18|19)
+			echo "(Akşamüstü)" ;;
+		20|21|22|23)
+			echo "(Akşam)" ;;
+	esac
+}
+
+# Saat bişey'i bişey geçiyor larda ki sayılara gelecek ekleri hesaplayan fonksiyon
+# Parametre olarak saat alır.
+function geceEkiniHesapla {
+	local saat=$1
+	case "$saat" in
+		1|5|8|11|13|17|20|23)
+			geceEki="'i" ;;
+		2|7|12|14|19|0)
+			geceEki="'yi" ;;
+		6|18)
+			geceEki="'yı" ;;
+		3|4|15|16)
+			geceEki="'ü" ;;
+		9|10|21|22)
+			geceEki="'u" ;;
+	esac
+	echo "$geceEki"
+}
+
+# Saat bişey'e bişey var larda ki sayılara gelecek ekleri hesaplayan fonksiyon
+# Parametre olarak saat alır.
+function kalaEkiniHesapla {
+	local saat=$1
+	case "$saat" in
+		1|3|4|5|8|11|13|15|16|17|20|23)
+			kalaEki="'e" ;;
+		2|7|12|14|19|0)
+			kalaEki="'ye" ;;
+		6|18)
+			kalaEki="'ya" ;;
+		9|10|21|22)
+			kalaEki="'a" ;;
+	esac
+	echo "$kalaEki"
+}
+
+# Saati yazıya çeviren fonksiyon
+# Parametre olarak saat alır.
+function saatiYaziyaCevir {
+	local saat=$1
+	array=("Bir" "İki" "Üç" "Dört" "Beş" "Altı" "Yedi" "Sekiz" "Dokuz" "On" "On Bir" "On İki")
+	indis=$(($saat % 12))
+	indis=$[$indis-1]
+	saatyazi=${array[$indis]}
+	echo "$saatyazi"
+}
+
+# Dakikayı yazıya çeviren fonksiyon
+# Parametre olarak dakika alır.
+function dakikayiYaziyaCevir {
+	local dakika=$1
+	#echo "$dakika"
+	# Sıfırları attığımız için eğer dakika nın ilk basamağı sıfır ise dakika gerçekten sıfırdır.
+	if [ "$dakika" -eq 0 ] ; then
+		dakikayazi="Sıfır"
+	# Dakika Tek Basamaklı Demektir.
+	elif [ "${dakika:1:1}" = "" ] ; then
+		dakika_tek_basamak=("Bir" "İki" "Üç" "Dört" "Beş" "Altı" "Yedi" "Sekiz" "Dokuz")
+		indis=${dakika:0:1}
+		indis=$[$indis-1]
+		dakikayazi=${dakika_tek_basamak[$indis]}
+	# Dakika Çift Basamaklı Demektir
+	else
+		dakika_ilk_basamak=("On" "Yirmi" "Otuz" "Kırk" "Elli")
+		indis=${dakika:0:1}
+		indis=$[$indis-1]
+		dakika1=${dakika_ilk_basamak[$indis]}
+		dakika_ikinci_basamak=("" "Bir" "İki" "Üç" "Dört" "Beş" "Altı" "Yedi" "Sekiz" "Dokuz")
+		indis=${dakika:1:1}
+		dakika2=${dakika_ikinci_basamak[$indis]}
+		dakikayazi="$dakika1 $dakika2"
+	fi
+	echo "$dakikayazi"
+}
+
+## Gelişmiş Fonksiyonlar
+
+# Deneysel Zaman için girilen zamanın geçerliliğini kontrol eden fonksiyon
+# Parametre olarak sırasıyla saat ve dakika alınır. Alınan saat ve dakika
+# geçerliyse "1" geçerli değilse "0" döndürür.
+function zamanKontrol {
+	# Öncelikle gelen parametreleri local değişkenlere ata
+	local saat=$1
+	local dakika=$2
+	
+	# Not! Saatin ve Dakikanın "sayı" olduğunu doğrulamadan sıfırlarını atmaya çalışma, sayı değilse hata alırsın.
+	
+	if [[ "$(sayiMi $saat)" = "evet" && "$(sayiMi $dakika)" = "evet" ]] ; then
+		# Belirtilen aralıklara uyuorsa - saat ve dakika sayı cinsinden demektir.
+		saat=$(sifiriniAt $saat)
+		dakika=$(sifiriniAt $dakika)
+		
+		#
+		if [[ "$saat" -ge 0 && "$saat" -le 23 && "$dakika" -ge 0 && "$dakika" -le 59 ]] ; then
+			# saat ve sayı zaman formatına uyuyor demektir. 0<saat<24 0<dakika<60
+			return 1
+		else
+			return 0
+		fi
+	else
+		echo "aaaaa"
+		return 0
+	fi
 }
 
 # Parametre geldiyse deneysel saati, parametre gelmediyse sistem saatini
@@ -57,160 +207,14 @@ function saatiAyarla {
 	echo "Kullanılacak Saat => ${temiz_saat}:${temiz_dakika}"
 }
 
-# Deneysel Zaman için girilen zamanın geçerliliğini kontrol eden fonksiyon
-# Parametre olarak sırasıyla saat ve dakika alınır. Alınan saat ve dakika
-# geçerliyse "1" geçerli değilse "0" döndürür.
-function zamanKontrol {
-	# Öncelikle gelen parametreleri local değişkenlere ata
-	local saat=$1
-	local dakika=$2
-	
-	# Not! Saatin ve Dakikanın "sayı" olduğunu doğrulamadan sıfırlarını atmaya çalışma
-	# Çünkü sayı değilse hata alırsın.
-	
-	if [[ "$(sayiMi $saat)" = "evet" && "$(sayiMi $dakika)" = "evet" ]] ; then
-		# Belirtilen aralıklara uyuorsa - saat ve dakika sayı cinsinden demektir.
-		saat=$(sifiriniAt $saat)
-		dakika=$(sifiriniAt $dakika)
-		
-		#
-		if [[ "$saat" -ge 0 && "$saat" -le 23 && "$dakika" -ge 0 && "$dakika" -le 59 ]] ; then
-			# saat ve sayı zaman formatına uyuyor demektir. 0<saat<24 0<dakika<60
-			return 1
-		else
-			return 0
-		fi
-	else
-		echo "aaaaa"
-		return 0
-	fi
-}
-
-# Gönderilen Sayının Önündeki Sıfırlarını atan fonksiyon
-# Parametre olarak saat veya dakika alır.
-function sifiriniAt {
-	echo "$((10#$1))"
-}
-
-# Gelen Değişken Sayı mı değil mi test eden fonksiyon
-# "1" adet değişken/parametre alır
-# Gelen parametre sayi "evet" değilse "hayır" yazdırır
-function sayiMi {
-	yournumber="$1"
-	# sayı için doku
-	re='^[0-9]+$'
-	if ! [[ $yournumber =~ $re ]] ; then
-		echo "hayır"
-	else
-		echo "evet"
-	fi
-}
-	
-# Öğlen Akşam İkindi Sabah Gece gibi kavramları hesaplayan fonksiyon
-function gunHesapla {
-	local saat=$(sifiriniAt $1)
-	case "$saat" in
-		0)
-			echo "(Gece yarısı)" ;;
-		1|2|3|4)
-			echo "(Gece)" ;;
-		5|6|7|8|9)
-			echo "(Sabah)" ;;
-		10|11)
-			echo "(Öğleden Önce)" ;;
-		12|13)
-			echo "(Öğleyin)" ;;
-		14|15)
-			echo "(İkindi)" ;;
-		16|17|18|19)
-			echo "(Akşamüstü)" ;;
-		20|21|22|23)
-			echo "(Akşam)" ;;
-	esac
-}
-
-# Saat bişey'i bişey geçiyor larda ki sayılara gelecek ekleri hesaplayan fonksiyon
-# Parametre olarak saat alır.
-function geceEkiniHesapla {
-	local saat=$(sifiriniAt $1)
-	case "$saat" in
-		1|5|8|11|13|17|20|23)
-			geceEki="'i" ;;
-		2|7|12|14|19|0)
-			geceEki="'yi" ;;
-		6|18)
-			geceEki="'yı" ;;
-		3|4|15|16)
-			geceEki="'ü" ;;
-		9|10|21|22)
-			geceEki="'u" ;;
-	esac
-	echo "$geceEki"
-}
-
-# Saat bişey'e bişey var larda ki sayılara gelecek ekleri hesaplayan fonksiyon
-# Parametre olarak saat alır.
-function kalaEkiniHesapla {
-	local saat=$(sifiriniAt $1)
-	case "$saat" in
-		1|3|4|5|8|11|13|15|16|17|20|23)
-			kalaEki="'e" ;;
-		2|7|12|14|19|0)
-			kalaEki="'ye" ;;
-		6|18)
-			kalaEki="'ya" ;;
-		9|10|21|22)
-			kalaEki="'a" ;;
-	esac
-	echo "$kalaEki"
-}
-
-# Saati yazıya çeviren fonksiyon
-# Parametre olarak saat alır.
-function saatiYaziyaCevir {
-	local saat=$(sifiriniAt $1)
-	array=("Bir" "İki" "Üç" "Dört" "Beş" "Altı" "Yedi" "Sekiz" "Dokuz" "On" "On Bir" "On İki")
-	indis=$(($saat % 12))
-	indis=$[$indis-1]
-	saatyazi=${array[$indis]}
-	echo "$saatyazi"
-}
-
-# Dakikayı yazıya çeviren fonksiyon
-# Parametre olarak dakika alır.
-function dakikayiYaziyaCevir {
-	local dakika=$(sifiriniAt $1)
-	#echo "$dakika"
-	# Sıfırları attığımız için eğer dakika nın ilk basamağı sıfır ise dakika gerçekten sıfırdır.
-	if [ "$dakika" -eq 0 ] ; then
-		dakikayazi="Sıfır"
-	# Dakika Tek Basamaklı Demektir.
-	elif [ "${dakika:1:1}" = "" ] ; then
-		dakika_tek_basamak=("Bir" "İki" "Üç" "Dört" "Beş" "Altı" "Yedi" "Sekiz" "Dokuz")
-		indis=${dakika:0:1}
-		indis=$[$indis-1]
-		dakikayazi=${dakika_tek_basamak[$indis]}
-	# Dakika Çift Basamaklı Demektir
-	else
-		dakika_ilk_basamak=("On" "Yirmi" "Otuz" "Kırk" "Elli")
-		indis=${dakika:0:1}
-		indis=$[$indis-1]
-		dakika1=${dakika_ilk_basamak[$indis]}
-		dakika_ikinci_basamak=("" "Bir" "İki" "Üç" "Dört" "Beş" "Altı" "Yedi" "Sekiz" "Dokuz")
-		indis=${dakika:1:1}
-		dakika2=${dakika_ikinci_basamak[$indis]}
-		dakikayazi="$dakika1 $dakika2"
-	fi
-	echo "$dakikayazi"
-}
+## Ana Fonksiyonlar
 
 # Saati Yaklaşık Olarak Hesaplayan Fonksiyon
 # Parametre olarak saat ve dakika alır.
+# Bu fonksiyon düzenlenecek!
 function yaklasikSaat {
-	# Saati sıfırlardan arındır ve saaty değişkenine ata
-	# Önemli Not ! $saat değişkenin orjinali bozulmuyor
-	local saat=$(sifiriniAt $1)
-	local dakika=$(sifiriniAt $2)
+	local saat=$1
+	local dakika=$2
 	if [[ "$dakika" -ge 0 && "$dakika" -le 3 ]] ; then
 		onek="Tam"
 		ek=""
@@ -238,7 +242,7 @@ function yaklasikSaat {
 		elif [[ "$dakika" -le 52 ]] ; then dakikayaz="On"
 		elif [[ "$dakika" -le 56 ]] ; then dakikayaz="Beş"
 		fi
-		sonek="Var"
+		sonek="Var."
 		if [ "$saat" -eq 24 ] ; then
 			saat=0
 		fi
@@ -250,27 +254,26 @@ function yaklasikSaat {
 # Parametre olarak saat ve dakika alır.
 function normalSaat {
 	local saat=$1
+	local dakika=$2
 	ek=$(geceEkiniHesapla $saat)
-	gun=$(gunHesapla $saat)
-	
-	# Saati Yazıya Çevirdik
-	saatyazi=$(saatiYaziyaCevir $1)
 	
 	# Dakikayı Yazıya Çevirdik
 	dakikayazi=$(dakikayiYaziyaCevir $2)
 	
-	echo "Normal Saat => $(gunHesapla $saat) $saatyazi$ek $dakikayazi Geçiyor."
+	echo "Normal Saat => $(gunHesapla $saat) $(saatiYaziyaCevir $saat)$ek $(dakikayiYaziyaCevir $dakika) Geçiyor."
 }
 
-# Öncelikli olarak -m parametresi için menü yapıldı.
+# -m parametresi için tasarlanan menü'yü getiren fonksiyon
 function menu {
 	options=("Normal Saat" "Yaklaşık Saat" "Deneysel Saat" "Çıkış Yap")
 	select opt in "${options[@]}" ; do
 		case $opt in
 			"Normal Saat")
+				saatiAyarla
 				normalSaat $temiz_saat $temiz_dakika
 				;;
 			"Yaklaşık Saat")
+				saatiAyarla
 				yaklasikSaat $temiz_saat $temiz_dakika 
 				;;
 			"Deneysel Saat")
@@ -308,6 +311,9 @@ function menu {
 #	(yani sayıların önündeki) sıfırlardan arındırılmış olmalı. 
 #	Çünkü bir sayının önünde sıfır olduğunda bash bunu hexedecimal sayı
 #	olarak adlandırıyor.
+
+# saatiAyarla fonksiyonundan sonra $temiz_saat ve $temiz_dakika değişkenleri sıfırlardan alınmış dakika ve saati tutar.
+# Dolayısıyla tüm ana fonksiyonlardan önce saatiAyarla fonksiyonu çalıştırılmalı ve parametre olarak temiz değişkenler gönderilmelidir.
 
 case "$#" in
 	0)	
