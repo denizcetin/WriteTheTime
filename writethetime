@@ -128,6 +128,19 @@ function dakikayiYaziyaCevir {
 	echo "$dakikayazi"
 }
 
+# Dakikayı yaklaşık yazıya çeviren fonksiyon
+# Parametre olarak dakika alır.
+function dakikayiYaklasikYaziyaCevir {
+	local dakika=$1
+	case $dakika in
+		[4-7]|5[3-6]) echo "Beş" ;;
+		[8-9]|1[0-2]|4[9]|5[0-2]) echo "On" ;;
+		1[3-7]|4[3-8]) echo "Çeyrek" ;;
+		1[8-9]|2[0-2]|3[8-9]|4[0-2]) echo "Yirmi" ;;
+		2[3-6]|3[4-7]) echo "Yirmi Beş" ;;
+		*) echo "YOK" ; exit ;;
+	esac
+}
 ## Gelişmiş Fonksiyonlar
 
 # Deneysel Zaman için girilen zamanın geçerliliğini kontrol eden fonksiyon
@@ -215,39 +228,29 @@ function saatiAyarla {
 function yaklasikSaat {
 	local saat=$1
 	local dakika=$2
-	if [[ "$dakika" -ge 0 && "$dakika" -le 3 ]] ; then
-		onek="Tam"
-		ek=""
-	elif [[ "$dakika" -ge 57 && "$dakika" -le 59 ]] ; then
-		saat=$[$saat + 1]
-		onek="Tam"
-		ek=""
-	elif [[ "$dakika" -ge 4 && "$dakika" -le 26 ]] ; then
-		ek=$(geceEkiniHesapla $saat)
-		if [[ "$dakika" -le 7 ]] ; then dakikayaz="Beş"
-		elif [[ "$dakika" -le 12 ]] ; then dakikayaz="On"
-		elif [[ "$dakika" -le 17 ]] ; then dakikayaz="Çeyrek"
-		elif [[ "$dakika" -le 22 ]] ; then dakikayaz="Yirmi"
-		elif [[ "$dakika" -le 26 ]] ; then dakikayaz="Yirmi Beş"
-		fi
-		sonek="Geçiyor."
-	elif [[ "$dakika" -ge 27 && "$dakika" -le 33 ]] ; then
-		ek=" Buçuk"
-	elif [[ "$dakika" -ge 34 && "$dakika" -le 56 ]] ; then
-		saat=$[$saat + 1]
-		ek="$(kalaEkiniHesapla $saat)"
-		if [[ "$dakika" -le 37 ]] ; then dakikayaz="Yirmi Beş"
-		elif [[ "$dakika" -le 42 ]] ; then dakikayaz="Yirmi"
-		elif [[ "$dakika" -le 48 ]] ; then dakikayaz="Çeyrek"
-		elif [[ "$dakika" -le 52 ]] ; then dakikayaz="On"
-		elif [[ "$dakika" -le 56 ]] ; then dakikayaz="Beş"
-		fi
-		sonek="Var."
-		if [ "$saat" -eq 24 ] ; then
-			saat=0
-		fi
-	fi
-	echo "Yaklaşık Saat => $(gunHesapla $saat) ${onek} $(saatiYaziyaCevir $saat)${ek} $dakikayaz $sonek"
+	
+	case $dakika in 
+		[0-3])
+			onek="Tam" ; ek="" ;;
+		5[7-9])
+			saat=$[$saat + 1] ; onek="Tam" ; ek="" ;;
+		2[7-9]|3[0-3])
+			ek=" Buçuk" ;;
+		*)
+			if [[ "$dakika" -ge 4 && "$dakika" -le 26 ]] ; then
+				ek=$(geceEkiniHesapla $saat)
+				sonek="Geçiyor."
+			elif [[ "$dakika" -ge 34 && "$dakika" -le 56 ]] ; then
+				saat=$[$saat + 1]
+				ek="$(kalaEkiniHesapla $saat)"
+				sonek="Var."
+			fi
+			if [ "$saat" -eq 24 ] ; then
+				saat=0
+			fi
+			;;
+	esac
+	echo "Yaklaşık Saat => $(gunHesapla $saat) ${onek} $(saatiYaziyaCevir $saat)${ek} $(dakikayiYaklasikYaziyaCevir $dakika) $sonek"
 }
 
 # Saati Tam Değeriyle Yazıyla Yazan Fonksiyon
