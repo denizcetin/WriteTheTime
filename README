@@ -23,10 +23,16 @@ Sistem Saatini yaklaşık olarak (halk ağzıyla) vermek için
 
 	./writethetime -y
 
-şeklinde -y parametresiyle çalıştırın.
+şeklinde "-y" parametresiyle çalıştırın.
 
 Sizin belirlediğiniz (elle girdiğiniz) bir saati yaklaşık olarak yazdırmak için
 
 	./writethetime -d 22 57
 	
-şeklindeki gibi -d saat dakika parametresiyle çalıştırın.
+şeklindeki gibi "-d saat dakika" parametresiyle çalıştırın.
+
+Menü'ye geçiş yapmak ve işlemleri buradan gerçekleştirmek için
+
+	./writethetime -m
+	
+şeklinde "-m" parametresiyle çalıştırın.
